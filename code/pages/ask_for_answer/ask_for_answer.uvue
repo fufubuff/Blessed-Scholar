@@ -1,0 +1,243 @@
+<template>
+  <view class="container">
+    <!-- Header with title and search button -->
+    <view class="header">
+      <text class="title">小研圈</text>
+      <icon type="search" size="24" class="search-icon" />
+    </view>
+
+    <!-- Tab Navigation -->
+    <view class="tab-bar">
+      <button class="tab" :class="{ active: activeTab === '求解答' }" @click="setActiveTab('求解答')">求解答</button>
+      <button class="tab" :class="{ active: activeTab === '加油站' }" @click="setActiveTab('加油站')">加油站</button>
+      <button class="tab" :class="{ active: activeTab === '关注' }" @click="setActiveTab('关注')">关注</button>
+    </view>
+
+    <!-- Post Content -->
+    <scroll-view scroll-y="true" class="post-list" v-if="activeTab === '求解答'">
+      <view v-for="(post, index) in posts" :key="index" class="post">
+        <view class="post-container">
+          <view class="post-header">
+            <image src="/static/logo.png" class="author-avatar" />
+            <view class="post-author-info">
+              <text class="post-author">{{ post.author }}</text>
+              <text class="post-date">{{ post.date }}</text>
+            </view>
+          </view>
+          <view class="post-content">
+            <text>{{ post.content }}</text>
+            <view class="post-images" v-if="post.images.length">
+              <image v-for="(img, idx) in post.images" src="/static/logo.png" :key="idx" class="post-image" />
+            </view>
+          </view>
+          <view class="post-actions">
+            <view @click="toggleLike(post)">
+              <image :src="post.liked ? '/static/logo.png' : '/static/logo.png'" class="action-icon" />
+            </view>
+            <view @click="toggleStar(post)">
+              <image :src="post.starred ? '/static/logo.png' : '/static/logo.png'" class="action-icon" />
+            </view>
+            <view>
+              <image src="/static/logo.png" class="action-icon" />
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- Bottom Navigation Bar -->
+    <view class="bottom-nav">
+      <view class="nav-item" @click="navigateTo('读书魂')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+        <text class="nav-text">读书魂</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('小研帮')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+        <text class="nav-text">小研帮</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('研小fu')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+      </view>
+      <view class="nav-item" @click="navigateTo('小研圈')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+        <text class="nav-text">小研圈</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('index')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+        <text class="nav-text">上岸人</text>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      activeTab: '求解答',
+      posts: [
+        {
+          author: 'Patisseris Land',
+          date: '刚刚发布',
+          content: '有没有小伙伴觉得张字老师的高数课，有关概念讲解的有点点难...',
+          images: ['/static/logo.png'],
+          liked: false,
+          starred: false
+        },
+        {
+          author: '柯小布',
+          date: '4分钟前',
+          content: '各位大佬们有没有英语阅读的学习方法，想用提高一下。赐赐',
+          images: [],
+          liked: false,
+          starred: false
+        },
+        {
+          author: '骑鱼吃小鱼',
+          date: '6分钟前',
+          content: '现在数学分指南二刷结束，是看81绝还是看题源...',
+          images: [],
+          liked: false,
+          starred: false
+        }
+      ]
+    };
+  },
+  methods: {
+    setActiveTab(tab) {
+      this.activeTab = tab;
+    },
+    toggleLike(post) {
+      post.liked = !post.liked;
+    },
+    toggleStar(post) {
+      post.starred = !post.starred;
+    },
+    navigateTo(page) {
+      // Navigation logic here
+    }
+  }
+};
+</script>
+
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: white;
+}
+.title {
+  font-size: 20px;
+  font-weight: bold;
+}
+.search-icon {
+  color: #666;
+  margin-left: auto;
+}
+.tab-bar {
+  display: flex;
+  justify-content: space-around;
+  background-color: #f8f8f8;
+  padding: 10px 0;
+}
+.tab {
+  color: #666;
+  font-size: 15px;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.tab.active {
+  color: red;
+  font-weight: bold;
+  border-bottom: 2px solid red; /* 下划线 */
+}
+.post-list {
+  flex: 1;
+  overflow-y: auto;
+}
+.post {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 2px solid #bd3124;
+}
+.post-container {
+  padding: 10px;
+}
+.post-header {
+  display: flex;
+  align-items: center;
+}
+.author-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+.post-author-info {
+  display: flex;
+  flex-direction: column;
+}
+.post-author {
+  font-weight: bold;
+}
+.post-date {
+  color: #999;
+  font-size: 12px;
+}
+.post-content {
+  margin-top: 10px;
+}
+.post-images {
+  display: flex;
+  margin-top: 10px;
+}
+.post-image {
+  width: 70px;
+  height: 70px;
+  margin-right: 5px;
+  border-radius: 4px;
+}
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+}
+.action-icon {
+  width: 24px;
+  height: 24px;
+}
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #fff;
+  height: 60px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.nav-icon {
+  width: 24px;
+  height: 24px;
+}
+.nav-text {
+  font-size: 12px;
+}
+</style>
