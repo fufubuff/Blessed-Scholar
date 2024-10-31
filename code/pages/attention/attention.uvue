@@ -1,0 +1,383 @@
+<template>
+  <view class="container">
+    <!-- Header with title and search button -->
+    <view class="header">
+      <text class="title">小研圈</text>
+      <icon type="search" size="24" class="search-icon" />
+    </view>
+
+    <!-- Tab Navigation -->
+    <view class="tab-bar">
+      <view class="tab-container" @click="setActiveTab('求解答')">
+        <text class="tab" :class="{ active: activeTab === '求解答' }">求解答</text>
+        <view v-if="activeTab === '求解答'" class="underline"></view>
+      </view>
+      <view class="tab-container" @click="setActiveTab('加油站')">
+        <text class="tab" :class="{ active: activeTab === '加油站' }">加油站</text>
+        <view v-if="activeTab === '加油站'" class="underline"></view>
+      </view>
+      <view class="tab-container" @click="setActiveTab('关注')">
+        <text class="tab" :class="{ active: activeTab === '关注' }">关注</text>
+        <view v-if="activeTab === '关注'" class="underline"></view>
+      </view>
+    </view>
+
+    <!-- Followed List (horizontal) -->
+    <scroll-view scroll-x="true" class="profile-row">
+      <view v-for="(user, index) in users" :key="index" class="profile-item">
+        <image :src="user.avatar" class="profile-avatar" />
+        <view class="profile-info">
+          <text class="username">{{ user.username }}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- New Content Section -->
+    <view class="new-content">
+      <view class="content-item" @click="setActiveContent('求解答')">
+        <view :class="['content-border', { 'active-border': activeContent === '求解答' }]">
+          <image src="/static/求解答帖.png" class="content-image" />
+        </view>
+      </view>
+      <view class="content-item" @click="setActiveContent('加油站')">
+        <view :class="['content-border', { 'active-border': activeContent === '加油站' }]">
+          <image src="/static/加油站帖.png" class="content-image" />
+        </view>
+      </view>
+    </view>
+
+    <!-- Post Content -->
+    <scroll-view scroll-y="true" class="post-list" v-if="activeContent === '加油站'">
+      <view v-for="(post, index) in posts" :key="index" class="post">
+        <view class="post-container">
+          <view class="post-header">
+            <image :src="post.authorAvatar" class="author-avatar" />
+            <view>
+              <text class="post-author">{{ post.author }}</text>
+              <text class="post-date">{{ post.date }}</text>
+            </view>
+          </view>
+          <view class="post-content">
+            <text>{{ post.content }}</text>
+            <view class="post-images">
+              <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" />
+            </view>
+          </view>
+          <view class="post-actions">
+            <view @click="toggleLike(post)">
+              <image :src="post.liked ? '/static/heart-filled.png' : '/static/heart.png'" class="action-icon" />
+            </view>
+            <view @click="toggleStar(post)">
+              <image :src="post.starred ? '/static/star-filled.png' : '/static/star.png'" class="action-icon" />
+            </view>
+            <view>
+              <image src="/static/chat.png" class="action-icon" />
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- Bottom Navigation Bar -->
+    <view class="bottom-nav">
+      <view class="nav-item" @click="navigateTo('读书魂')">
+        <image src="/static/读书魂.png" class="nav-icon"></image>
+        <text class="nav-text">读书魂</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('小研帮')">
+        <image src="/static/小研帮.png" class="nav-icon"></image>
+        <text class="nav-text">小研帮</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('研小fu')">
+        <image src="/static/研小fu.png" class="nav-icon"></image>
+      </view>
+      <view class="nav-item" @click="navigateTo('小研圈')">
+        <image src="/static/小研圈.png" class="nav-icon"></image>
+        <text class="nav-text">小研圈</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('index')">
+        <image src="/static/上岸人.png" class="nav-icon"></image>
+        <text class="nav-text">上岸人</text>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      activeTab: '关注', // 默认激活的标签
+      activeContent: '', // 默认激活的内容
+      users: [
+        { username: 'mx', avatar: '/static/mx.jpg'},
+        { username: 'hxy', avatar: '/static/hxy.jpg' },
+        { username: 'sjh', avatar: '/static/sjh.jpg' },
+        { username: 'zmx', avatar: '/static/zmx.jpg' },
+        { username: 'xh', avatar: '/static/xh.jpg' },
+      ],
+      posts: [
+        {
+          author: 'mx',
+          authorAvatar: '/static/mx.jpg',
+          date: '2024-10-18',
+          content: '第二周，21天模拟，我已经打卡14天，坚持就是胜利呀~ #21天高数模拟卷打卡#',
+          images: [
+            '/static/logo.png',
+            '/static/logo.png',
+            '/static/logo.png'
+          ],
+          liked: false,
+          starred: false
+        },
+        // 可以添加更多的帖子对象
+      ]
+    };
+  },
+  methods: {
+    setActiveTab(tab) {
+      this.activeTab = tab;
+    },
+    setActiveContent(content) {
+      this.activeContent = content;
+    },
+    navigateTo(page) {
+      // 导航到指定页面的逻辑
+    },
+    toggleLike(post) {
+      post.liked = !post.liked;
+    },
+    toggleStar(post) {
+      post.starred = !post.starred;
+    }
+  }
+};
+</script>
+
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: white;
+  align-items: center;
+}
+.title {
+  font-size: 20px;
+  font-weight: bold;
+}
+.search-icon {
+  font-size: 13px;
+  color: #666;
+}
+.tab-bar {
+  display: flex;
+  flex-direction: row;
+  font-weight: bold;
+  justify-content: space-around;
+  background-color: #f8f8f8;
+  padding: 10px 0;
+  position: relative;
+}
+.tab-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.tab {
+  color: #666;
+  font-size: 15px;
+  position: relative;
+}
+.tab.active {
+  color: red;
+}
+.underline {
+  width: 100%;
+  height: 2px;
+  background-color: red;
+  margin-top: 5px;
+}
+.profile-row {
+  display: flex; 
+  flex-direction: row;
+  padding-top: 0px ;
+  background-color: #FFFFFF;
+  overflow-x: auto; /* 允许横向滚动 */
+  align-items: center; /* 垂直居中 */
+  padding-left: 20px; /* 离左边界一定距离 */
+}
+.profile-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 20px;
+}
+.profile-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.username {
+  font-size: 18px;
+  color: #333;
+}
+.new-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  background-color: #f8f8f8;
+  padding-top: 5px ;
+  padding-bottom: 5px;
+}
+.content-item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.content-border {
+  width: 130px;
+  height: 40px;
+  border: 2px solid #999; /* 深灰色边框 */
+  border-radius: 15px; /* 圆角矩形 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.active-border {
+  border-color: red; /* 激活时边框变红 */
+}
+.content-image {
+  width: 30px;
+  height: 30px;
+}
+.post-list {
+  flex: 1;
+  overflow-y: auto; /* 允许纵向滚动 */
+}
+.post {
+  background-color: #ffffff;
+  padding: 6px;
+  margin: 6px ;
+  border-radius: 8px;
+}
+.post-container {
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  padding: 10px; /* 减小内边距 */
+  margin-bottom: 10px;
+  border: 2px solid #bd3124; /* 枣红色边框 */
+}
+.post-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 8px; /* 减小底部边距 */
+}
+.author-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.post-author {
+  font-weight: bold;
+}
+.post-date {
+  color: #999;
+  font-size: 8px;
+}
+.post-content {
+  font-size: small;
+  margin-top: 5px; /* 减小顶部边距 */
+}
+.post-images {
+  display: flex;
+  flex-direction: row;
+  margin-top: 5px; /* 减小顶部边距 */
+}
+.post-image {
+  width: 70px;
+  height: 70px;
+  margin-right: 5px;
+  border-radius: 4px;
+}
+.post-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-top: 5px; /* 减小顶部边距 */
+}
+.action-icon {
+  width: 24px;
+  height: 24px;
+}
+.bottom-nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  height: 60px; /* 导航栏高度 */
+  background-color: #FFFFFF; /* 导航栏背景颜色 */
+  border-top: 1px solid white; /* 导航栏上方的黑色水平线 */
+  position: fixed; /* 固定在底部 */
+  bottom: 0;
+  width: 100%;
+}
+
+/* 导航项样式 */
+.nav-item {
+  display: flex;
+  flex-direction: row;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 导航图标样式 */
+.nav-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* 导航文本样式 */
+.nav-text {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #000000;
+}
+
+/* 修改第三个导航项的样式为圆角矩形填充为暗红色 */
+.nav-item:nth-child(3) {
+  width: 70px; /* 圆角矩形的宽度 */
+  height: 40px; /* 圆角矩形的高度 */
+  background-color: #bd3124; /* 填充颜色为暗红色 */
+  border-radius: 15px; /* 圆角半径为20px */
+  justify-content: center; /* 垂直居中 */
+  align-items: center; /* 水平居中 */
+}
+
+/* 第三个导航项中的加号样式 */
+.nav-item:nth-child(3)::before {
+  content: '+'; /* 加号字符 */
+  color: white; /* 加号颜色为白色 */
+  font-size: 24px; /* 加号大小 */
+  font-weight: bold; /* 加号加粗 */
+}
+
+/* 移除第三个导航项的图片 */
+.nav-item:nth-child(3) .nav-icon {
+  display: none;
+}
+</style>
