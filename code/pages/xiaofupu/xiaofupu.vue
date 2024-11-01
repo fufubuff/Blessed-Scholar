@@ -20,47 +20,66 @@
         <div class="item-info">
           <div class="item-title">{{ item.title }}</div>
           <div class="item-author">{{ item.author }}</div>
-          <div class="item-price" @click="openExchangePopup(item)">{{ item.price }}福币</div>
+          <div class="item-price" @click="openExchangePopup(item)">
+            <span class="price-circle">{{ item.price }}福币</span>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- 已兑换商品列表 -->
+    <div v-if="activeTab === 'exchanged'" class="item-list">
+      <div v-if="exchangedItems.length" class="item-card" v-for="(item, index) in exchangedItems" :key="index">
+        <image class="item-image" :src="item.image" />
+        <div class="item-info">
+          <div class="item-title">{{ item.title }}</div>
+          <div class="item-author">{{ item.author }}</div>
+          <div class="item-price">
+            <span class="price-circle">{{ item.price }}福币</span>
+          </div>
+        </div>
+      </div>
+      <div v-else class="no-items">暂无已兑换商品</div>
+    </div>
+
     <!-- 确认兑换的弹窗 -->
     <div v-if="showExchangePopup" class="popup">
-      <div class="popup-content">
+      <div class="popup-content exchange-popup">
         <h3>确认兑换</h3>
-        <p>{{ selectedItem.title }}</p>
-        <p>余额： FUB {{ userBalance }}</p>
-        <button @click="closePopup">取消</button>
-        <button @click="confirmExchange">确定</button>
+        <p class="item-title">{{ selectedItem.title }}</p>
+        <p class="balance">余额： FUB {{ userBalance }}</p>
+        <div class="button-group">
+          <button class="cancel-button" @click="closePopup">取消</button>
+          <button class="confirm-button" @click="confirmExchange">确定</button>
+        </div>
       </div>
     </div>
 
     <!-- 兑换成功的弹窗 -->
     <div v-if="showSuccessPopup" class="popup">
-      <div class="popup-content">
+      <div class="popup-content success-popup">
         <h3>兑换成功 (＾︿＾)</h3>
-        <p>{{ selectedItem.title }}</p>
-        <p>余额： FUB {{ userBalance }}</p>
-        <button @click="modifyAddress">点击填写楼号#</button>
+        <p class="item-title">{{ selectedItem.title }}</p>
+        <p class="balance">余额： FUB {{ userBalance }}</p>
+        <button class="confirm-button" @click="modifyAddress">点击填写楼号#</button>
       </div>
     </div>
 
     <!-- 修改收件地址的弹窗 -->
     <div v-if="showModifyAddressPopup" class="popup">
-      <div class="popup-content">
+      <div class="popup-content address-popup">
         <h3>收件地址</h3>
-        <input v-model="address" placeholder="输入收件地址" />
-        <button @click="confirmModifyAddress">确认修改</button>
+        <input class="address-input" v-model="address" placeholder="输入收件地址" />
+        <button class="confirm-button" @click="confirmModifyAddress">确认修改</button>
       </div>
     </div>
 
     <!-- 确认收件的弹窗 -->
     <div v-if="showConfirmReceivePopup" class="popup">
-      <div class="popup-content">
-        <h3>感谢填写（･≧︿≦）</h3>
+      <div class="popup-content receive-popup">
+        <h3>感谢填写 (･≧︿≦)</h3>
         <p>小研将在一星期内为您派送，请注意查收&gt;&lt;</p>
-        <button @click="closePopup">确认</button>
+        <button class="confirm-button" @click="closePopup">确认</button>
       </div>
     </div>
   </div>
@@ -85,22 +104,21 @@ export default {
           image: '/static/sjjg.jpg',
         },
       ],
+      exchangedItems: [],
       showExchangePopup: false,
       showSuccessPopup: false,
       showModifyAddressPopup: false,
       showConfirmReceivePopup: false,
       selectedItem: null,
       userBalance: 2240,
-      address: '',
+      address: '11#451',
     };
   },
   methods: {
     goBack() {
-      // 返回上一页的逻辑
       this.$router.go(-1);
     },
     openSearch() {
-      // 打开搜索的逻辑
       console.log('搜索按钮点击');
     },
     switchTab(tab) {
@@ -119,6 +137,7 @@ export default {
     confirmExchange() {
       if (this.userBalance >= this.selectedItem.price) {
         this.userBalance -= this.selectedItem.price;
+        this.exchangedItems.push(this.selectedItem);
         this.showExchangePopup = false;
         this.showSuccessPopup = true;
       } else {
@@ -218,12 +237,19 @@ export default {
   color: #999;
 }
 
-.item-price {
-  font-size: 14px;
+.price-circle {
+  display: inline-block;
+  padding: 5px 10px;
+  border: 1px solid #e74c3c;
   color: #e74c3c;
-  font-weight: bold;
-  align-self: flex-end;
-  cursor: pointer;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.no-items {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
 }
 
 .popup {
@@ -240,43 +266,55 @@ export default {
 
 .popup-content {
   background-color: #ffffff;
-  padding: 20px;
+  padding: 30px;
   border-radius: 10px;
   text-align: center;
   width: 80%;
   max-width: 300px;
 }
 
-.popup-content h3 {
+.exchange-popup h3,
+.success-popup h3,
+.address-popup h3,
+.receive-popup h3 {
   color: #e74c3c;
-  margin-bottom: 20px;
+  font-size: 18px;
+  margin-bottom: 15px;
 }
 
-.popup-content p {
+.item-title,
+.balance {
   font-size: 16px;
   color: #333;
-  margin-bottom: 20px;
 }
 
-.popup-content input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+.button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cancel-button,
+.confirm-button {
+  background-color: transparent;
   font-size: 16px;
-}
-
-.popup-content button {
-  padding: 10px 20px;
-  margin: 5px;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
 }
 
-.popup-content button:nth-child(3) {
-  background-color: #e74c3c;
-  color: #ffffff;
+.cancel-button {
+  color: #333;
+}
+
+.confirm-button {
+  color: #e74c3c;
+}
+
+.address-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  margin: 20px 0;
 }
 </style>
