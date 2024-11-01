@@ -78,6 +78,38 @@
       </view>
     </scroll-view>
 
+    <!-- Question Content -->
+    <scroll-view scroll-y="true" class="question-list" v-if="activeContent === '求解答'">
+      <view v-for="(question, index) in questions" :key="index" class="question">
+        <view class="question-container">
+          <view class="question-header">
+            <image :src="question.authorAvatar" class="author-avatar" />
+            <view>
+              <text class="question-author">{{ question.author }}</text>
+              <text class="question-date">{{ question.date }}</text>
+            </view>
+          </view>
+          <view class="question-content">
+            <text>{{ question.content }}</text>
+            <view class="question-images">
+              <image v-for="(img, idx) in question.images" :src="img" :key="idx" class="question-image" />
+            </view>
+          </view>
+          <view class="question-actions">
+            <view @click="toggleLike(question)">
+              <image :src="question.liked ? '/static/heart-filled.png' : '/static/heart.png'" class="action-icon" />
+            </view>
+            <view @click="toggleStar(question)">
+              <image :src="question.starred ? '/static/star-filled.png' : '/static/star.png'" class="action-icon" />
+            </view>
+            <view class="answer-button" @click="answerQuestion(question)">
+              <text class="answer-text">回答</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
     <!-- Bottom Navigation Bar -->
     <view class="bottom-nav">
       <view class="nav-item" @click="navigateTo('读书魂')">
@@ -128,9 +160,25 @@ export default {
             '/static/logo.png'
           ],
           liked: false,
-          starred: false
+          starred: false,
+          type: '加油站'
         },
         // 可以添加更多的帖子对象
+      ],
+      questions: [
+        {
+          author: 'hxy',
+          authorAvatar: '/static/hxy.jpg',
+          date: '2024-10-19',
+          content: '求解答：如何解决这个数学问题？',
+          images: [
+            '/static/logo.png'
+          ],
+          liked: false,
+          starred: false,
+          type: '求解答'
+        },
+        // 可以添加更多的求解答帖子对象
       ]
     };
   },
@@ -149,6 +197,9 @@ export default {
     },
     toggleStar(post) {
       post.starred = !post.starred;
+    },
+    answerQuestion(question) {
+      // 回答问题的逻辑
     }
   }
 };
@@ -257,7 +308,7 @@ export default {
   align-items: center;
 }
 .active-border {
-  border-color: red; /* 激活时边框变红 */
+  border-color: #bd3124; /* 激活时边框变红 */
 }
 .content-image {
   width: 30px;
@@ -323,6 +374,72 @@ export default {
 .action-icon {
   width: 24px;
   height: 24px;
+}
+.question-list {
+  flex: 1;
+  overflow-y: auto; /* 允许纵向滚动 */
+}
+.question {
+  background-color: #ffffff;
+  padding: 6px;
+  margin: 6px ;
+  border-radius: 8px;
+}
+.question-container {
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  padding: 10px; /* 减小内边距 */
+  margin-bottom: 10px;
+  border: 2px solid #bd3124; /* 枣红色边框 */
+}
+.question-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 8px; /* 减小底部边距 */
+}
+.author-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.question-author {
+  font-weight: bold;
+}
+.question-date {
+  color: #999;
+  font-size: 8px;
+}
+.question-content {
+  font-size: small;
+  margin-top: 5px; /* 减小顶部边距 */
+}
+.question-images {
+  display: flex;
+  flex-direction: row;
+  margin-top: 5px; /* 减小顶部边距 */
+}
+.question-image {
+  width: 70px;
+  height: 70px;
+  margin-right: 5px;
+  border-radius: 4px;
+}
+.question-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-top: 5px; /* 减小顶部边距 */
+}
+.answer-button {
+  background-color: #bd3124;
+  border-radius: 15px;
+  padding: 5px 23px;
+}
+.answer-text {
+  color: white;
+  font-size: 14px;
 }
 .bottom-nav {
   display: flex;
