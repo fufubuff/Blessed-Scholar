@@ -27,19 +27,12 @@
           <view class="post-content">
             <text>{{ post.content }}</text>
             <view class="post-images" v-if="post.images.length">
-              <image v-for="(img, idx) in post.images" src="/static/logo.png" :key="idx" class="post-image" />
+              <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" />
             </view>
           </view>
           <view class="post-actions">
-            <view @click="toggleLike(post)">
-              <image :src="post.liked ? '/static/logo.png' : '/static/logo.png'" class="action-icon" />
-            </view>
-            <view @click="toggleStar(post)">
-              <image :src="post.starred ? '/static/logo.png' : '/static/logo.png'" class="action-icon" />
-            </view>
-            <view>
-              <image src="/static/logo.png" class="action-icon" />
-            </view>
+            <text class="followers-count">{{ post.followersCount }} 人正在关注</text>
+            <button class="answer-button">回答</button>
           </view>
         </view>
       </view>
@@ -81,6 +74,7 @@ export default {
           date: '刚刚发布',
           content: '有没有小伙伴觉得张字老师的高数课，有关概念讲解的有点点难...',
           images: ['/static/logo.png'],
+          followersCount: 15,
           liked: false,
           starred: false
         },
@@ -89,6 +83,7 @@ export default {
           date: '4分钟前',
           content: '各位大佬们有没有英语阅读的学习方法，想用提高一下。赐赐',
           images: [],
+          followersCount: 10,
           liked: false,
           starred: false
         },
@@ -97,6 +92,7 @@ export default {
           date: '6分钟前',
           content: '现在数学分指南二刷结束，是看81绝还是看题源...',
           images: [],
+          followersCount: 10,
           liked: false,
           starred: false
         }
@@ -106,12 +102,6 @@ export default {
   methods: {
     setActiveTab(tab) {
       this.activeTab = tab;
-    },
-    toggleLike(post) {
-      post.liked = !post.liked;
-    },
-    toggleStar(post) {
-      post.starred = !post.starred;
     },
     navigateTo(page) {
       // Navigation logic here
@@ -144,6 +134,7 @@ export default {
 }
 .tab-bar {
   display: flex;
+  flex-direction: row;
   justify-content: space-around;
   background-color: #f8f8f8;
   padding: 10px 0;
@@ -155,11 +146,13 @@ export default {
   border: none;
   background: transparent;
   cursor: pointer;
+  flex: 1;
+  text-align: center;
 }
 .tab.active {
   color: red;
   font-weight: bold;
-  border-bottom: 2px solid red; /* 下划线 */
+  border-bottom: 2px solid #bd3124; /* 下划线 */
 }
 .post-list {
   flex: 1;
@@ -211,12 +204,22 @@ export default {
 }
 .post-actions {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   margin-top: 10px;
+  align-items: center;
 }
-.action-icon {
-  width: 24px;
-  height: 24px;
+.followers-count {
+  color: #bd3124;
+  font-size: 14px;
+}
+.answer-button {
+  background-color: #f8f8f8;
+  color: #bd3124;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
 }
 .bottom-nav {
   display: flex;
