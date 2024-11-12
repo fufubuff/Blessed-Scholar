@@ -26,11 +26,14 @@
 			</view>
 			<view class="form-item">
 				<view class="label">上传资料封面</view>
-				<view>上传</view>
+				<view style="background: rgb(229, 229, 229);height: 100rpx;width: 200rpx;text-align: center;line-height: 130rpx;">
+					<svg style="color:rgb(141, 158, 167);width:68rpx;height: 62rpx;" viewBox="0 0 32 32"><path fill="rgb(141, 158, 167)" fill-rule="evenodd" d="M23 10H10v12h13V10ZM10 8a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h13a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2H10Z" clip-rule="evenodd"></path><path fill="rgb(141, 158, 167)" d="M15 13.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM11 22h3l4.58-4.2L23 21v-2.5l-3.25-2.32a2 2 0 0 0-2.53.15L11 22Z"></path></svg>
+				</view>
+				
 			</view>
-			<view>
-				<view class="label">资料内容</view>
-				<textarea placeholder="资料内容" class="form-content" />
+			<view class="form-item" style="align-items:flex-start">
+				<image style="width: 40rpx;height: 40rpx;margin-top: 25rpx;" src="../../static/write.png"></image>
+				<textarea placeholder="资料内容编辑中..." class="form-content" />
 			</view>
 		</view>
 	</view>
@@ -100,7 +103,7 @@ page{
 }
 .form-content{
 	width: 100%;
+	margin-left: 20rpx;
 	margin-top: 20rpx;
-	border: 1px solid #e1e1e1;
 }
 </style>
