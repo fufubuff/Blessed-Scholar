@@ -1,11 +1,4 @@
 <template>
-  <div class="store-page">
-    <!-- 顶部导航栏 -->
-    <div class="top-nav">
-      <image class="back-icon" src="/static/back-icon.png" @click="goBack" />
-      <h1 class="title">小福铺</h1>
-      <image class="search-icon" src="/static/search.png" @click="openSearch" />
-    </div>
 
     <!-- 选项卡切换 -->
     <div class="tab-bar">
@@ -82,7 +75,7 @@
         <button class="confirm-button" @click="closePopup">确认</button>
       </div>
     </div>
-  </div>
+ 
 </template>
 
 <script>
@@ -110,49 +103,128 @@ export default {
       showModifyAddressPopup: false,
       showConfirmReceivePopup: false,
       selectedItem: null,
-      userBalance: 2240,
+	  userBalance: 0, // 用户福币余额
       address: '11#451',
     };
   },
+  async created() {
+      // 获取用户福币余额
+      await this.fetchUserBalance();
+      
+    },
   methods: {
+	  
+	  // 获取用户福币余额
+	      async fetchUserBalance() {
+	        try {
+	          const userId = uni.getStorageSync('user_id'); // 获取当前用户ID
+	          const response = await uniCloud.callFunction({
+	            name: 'getUserFubInfo',
+	            data: { user_id: userId }
+	          });
+	  
+	          if (response.result.code === 0) {
+	            this.userBalance = response.result.data.fub; // 更新福币余额
+	          } else {
+	            uni.showToast({ title: '获取福币信息失败', icon: 'none' });
+	          }
+	        } catch (error) {
+	          console.error('Error fetching user balance:', error);
+	          uni.showToast({ title: '获取福币余额失败', icon: 'none' });
+	        }
+	      },
+		  
     goBack() {
       this.$router.go(-1);
     },
-    openSearch() {
-      console.log('搜索按钮点击');
-    },
+    
     switchTab(tab) {
       this.activeTab = tab;
     },
+	
     openExchangePopup(item) {
       this.selectedItem = item;
       this.showExchangePopup = true;
     },
+	
     closePopup() {
       this.showExchangePopup = false;
       this.showSuccessPopup = false;
       this.showModifyAddressPopup = false;
       this.showConfirmReceivePopup = false;
     },
-    confirmExchange() {
-      if (this.userBalance >= this.selectedItem.price) {
-        this.userBalance -= this.selectedItem.price;
-        this.exchangedItems.push(this.selectedItem);
-        this.showExchangePopup = false;
-        this.showSuccessPopup = true;
-      } else {
-        alert('福币不足');
-      }
-    },
-    modifyAddress() {
-      this.showSuccessPopup = false;
-      this.showModifyAddressPopup = true;
-    },
-    confirmModifyAddress() {
-      this.showModifyAddressPopup = false;
-      this.showConfirmReceivePopup = true;
-    },
-  },
+	
+    // 确认兑换操作
+        async confirmExchange() {
+          if (this.selectedItem.price > this.userBalance) {
+            uni.showToast({ title: '福币余额不足，无法兑换', icon: 'none' });
+            return;
+          }
+    
+          const userId = uni.getStorageSync('user_id'); // 获取当前用户ID
+          const { id, title, price } = this.selectedItem;
+          const date = new Date().toISOString().split('T')[0]; // 格式化日期为 'YYYY-MM-DD'
+    
+          // 1. 更新福币余额
+            try {
+              const updateScoreResponse = await uniCloud.callFunction({
+                name: 'updateUserScore',
+                data: {
+                  user_id: userId,
+                  scoreChange: -price // 扣除兑换的福币
+                }
+              });
+          
+              if (updateScoreResponse.result.code === 0) {
+                // 2. 更新前端余额
+                this.userBalance -= price; // 直接更新前端的余额
+                uni.showToast({ title: '兑换成功', icon: 'success' });
+          
+                // 3. 生成交易记录
+                const transactionResponse = await uniCloud.callFunction({
+                  name: 'addTransactionRecord',
+                  data: {
+                    user_id: userId,
+                    description: `兑换${title}`,
+                    amount: -price, // 扣除福币
+                    date: date
+                  }
+                });
+          
+                if (transactionResponse.result.code !== 0) {
+                  uni.showToast({ title: '交易记录添加失败', icon: 'none' });
+                }
+          
+                // 4. 将已兑换商品添加到已兑换列表
+                      this.exchangedItems.push(this.selectedItem); // 将兑换的商品加入已兑换列表
+                
+                      // 5. 关闭兑换弹窗
+                      this.showExchangePopup = false;
+                
+                      // 6. 显示填写收件地址的弹窗
+                      this.showModifyAddressPopup = true; // 弹出地址填写弹窗
+                
+                    } else {
+                      uni.showToast({ title: '福币更新失败', icon: 'none' });
+                    }
+                  } catch (error) {
+                    console.error('Error during exchange:', error);
+                    uni.showToast({ title: '兑换失败', icon: 'none' });
+                  }
+          },
+		  
+		  // 确认修改地址后，显示确认收件弹窗
+		  async confirmModifyAddress() {
+		    if (!this.address.trim()) {
+		      uni.showToast({ title: '请输入收件地址', icon: 'none' });
+		      return;
+		    }
+			
+		  // 7. 显示确认收件的弹窗
+		    this.showModifyAddressPopup = false; // 关闭修改地址弹窗
+		    this.showConfirmReceivePopup = true; // 显示确认收件弹窗	  
+	}
+  }
 };
 </script>
 

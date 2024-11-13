@@ -35,13 +35,16 @@ export default {
             });
             
             if (res.result.success) {
+				uni.setStorageSync('userInfo', res.result.data);
+				// 存储 account 信息
+				uni.setStorageSync('account', this.form.account);
               // 将 user_id 存储到本地
               const userId = res.result.data.user_id;
               uni.setStorageSync('user_id', userId);
 			  console.log("Stored user_id:", uni.getStorageSync('user_id')); // 输出 user_id
               
               uni.showToast({ title: '登录成功', icon: 'success' });
-			  uni.navigateTo({ url: '/pages/leaderboard/leaderboard' });//自己测试
+			  uni.navigateTo({ url: '/pages/zhuyehuodong/zhuyehuodong' });//自己测试
               //uni.switchTab({ url: '/pages/home/home' });
             } else {
               uni.showToast({ title: res.result.message || '登录失败', icon: 'none' });

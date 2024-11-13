@@ -1,43 +1,39 @@
 <template>
   <view class="container">
-      <!-- 背景图片 -->
-      <view class="background">
-		  <image src="/static/bghxy.jpg" style="width:100%; height:100%;" mode="aspectFill" />
-	  </view>
+    <!-- 背景图片 -->
+    <view class="background">
+      <image src="/static/bghxy.jpg" style="width:100%; height:100%;" mode="aspectFill" />
+    </view>
 
-	 <!-- 排行榜 -->
+    <!-- 排行榜 -->
     <view class="leaderboard">
       <view class="user" v-for="user in users" :key="user.user_id">
         <view class="avatar">
           <image :src="user.avatarUrl" mode="aspectFill" />
         </view>
         <view class="username">{{ user.nickname }}</view>
-		<!-- 中间：福币数和福币logo -->
-		<view class="fub-info">
-		    <image src="/static/fub-logo.webp" class="fub-logo" />
-		    <text class="fub-amount">{{ user.score }} 福币</text>
-		</view>
-
-		<view class="rank">{{ user.rank }}</view>
+        <!-- 中间：福币数和福币logo -->
+        <view class="fub-info">
+          <image src="/static/fub-logo.webp" class="fub-logo" />
+          <text class="fub-amount">{{ user.score }} 福币</text>
+        </view>
+        <view class="rank">{{ user.rank }}</view>
       </view>
     </view>
-
 
     <view class="current-user" @click="goToMyFub">
       <view class="avatar">
         <image :src="currentUser.avatarUrl" mode="aspectFill" />
       </view>
       <view class="username">{{ '我' }}</view>
-	  <view class="fub-info">
-	      <image src="/static/fub-logo.webp" class="fub-logo" />
-	      <text class="fub-amount">{{ currentUser.score || 0 }} 福币</text>
-	  </view>
-	  <view class="rank">{{ currentUser.rank || '-' }}</view>
+      <view class="fub-info">
+        <image src="/static/fub-logo.webp" class="fub-logo" />
+        <text class="fub-amount">{{ currentUser.score || 0 }} 福币</text>
+      </view>
+      <view class="rank">{{ currentUser.rank || '-' }}</view>
     </view>
-
   </view>
 </template>
-
 
 <script>
 export default {
@@ -52,37 +48,43 @@ export default {
   },
   methods: {
     async fetchLeaderboardData() {
-      try {
-        const userId = uni.getStorageSync('user_id'); // 获取当前用户的 user_id
-		console.log("Retrieved user_id:", userId); // 调试输出 user_id
+  try {
+    const userId = uni.getStorageSync('user_id'); // 获取当前用户的 user_id
+    if (!userId) {
+      console.error('user_id not found in local storage');
+      uni.showToast({ title: '用户未登录', icon: 'none' });
+      return;
+    }
 
-        // 调用云函数获取排行榜数据和当前用户排名
-        const response = await uniCloud.callFunction({
-          name: 'getLeaderboard',
-          data: { user_id: userId }
-        });
+    const response = await uniCloud.callFunction({
+      name: 'getLeaderboard',
+      data: { user_id: userId }
+    });
 
-        if (response.result && response.result.code === 0) {
-          this.users = response.result.data.users;
-          this.currentUser = response.result.data.currentUser || {};
-        } else {
-          console.error('Failed to fetch leaderboard data:', response.result.msg);
-        }
-      } catch (error) {
-        uni.showToast({ title: '获取排行榜失败', icon: 'none' });
-        console.error(error);
-      }
-    },
-	goToMyFub() {
-	    const userId = uni.getStorageSync('user_id'); // 获取当前用户的 user_id
-	    uni.navigateTo({
-	      url: `/pages/myFub/myFub?user_id=${userId}`
-	});
+    console.log("Cloud function response:", response); // 调试输出云函数返回值
+
+    if (response.result && response.result.code === 0) {
+      this.users = response.result.data.users;
+      this.currentUser = response.result.data.currentUser || {};
+    } else {
+      console.error('Failed to fetch leaderboard data:', response.result.msg);
+      uni.showToast({ title: '获取排行榜数据失败', icon: 'none' });
+    }
+  } catch (error) {
+    uni.showToast({ title: '获取排行榜失败', icon: 'none' });
+    console.error(error);
   }
-}
+  },
+
+    goToMyFub() {
+      const userId = uni.getStorageSync('user_id'); // 获取当前用户的 user_id
+      uni.navigateTo({
+        url: `/pages/myFub/myFub?user_id=${userId}`
+      });
+    }
+  }
 };
 </script>
-
 
 <style>
 .container {
@@ -93,7 +95,7 @@ export default {
 }
 
 /* 背景图片 */
-.background image{
+.background image {
   position: absolute;
   top: 0;
   left: 0;
@@ -105,10 +107,10 @@ export default {
 /* 排行榜 */
 .leaderboard {
   position: relative;
-    width: 90%;
-    margin-top: 35%; /* 排行榜紧跟在背景图片下方 */
-    padding: 15px 10px;
-	background-color: #fff;
+  width: 90%;
+  margin-top: 35%; /* 排行榜紧跟在背景图片下方 */
+  padding: 15px 10px;
+  background-color: #fff;
 }
 
 /* 每个用户条目 */
@@ -126,8 +128,7 @@ export default {
   border-bottom: none;
 }
 
-
-.avatar image{
+.avatar image {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -170,5 +171,4 @@ export default {
   font-weight: bold;
   font-style: italic;
 }
-
 </style>

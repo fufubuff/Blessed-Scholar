@@ -22,8 +22,11 @@
         <text class="intro" @click="navigateTo('bianjiziliao')">这是我的自我介绍。</text>
         <text class="following" @click="navigateTo('guanzhu')">你正在关注</text>
         <text class="stats" @click="navigateTo('fensi')">有人在意你</text>
-        <image class="fubipaihangbang" src="/static/排行榜.png"></image>
-      </view>
+        <text class="fubi" @click="navigateToMyFub">福币</text>
+        <view class="ranking-container" @click="navigateToLeaderboard">
+      <image class="fubipaihangbang" src="/static/排行榜.png"></image>
+    </view>
+	  </view>
     </view>
 
     <!-- 按钮 -->
@@ -121,28 +124,7 @@
 	              <view class="status-label">{{ activity.status }}</view>
 	            </view>
 	          </view>
-    <!-- 底部导航栏 -->
-    <view class="bottom-nav">
-      <view class="nav-item" @click="navigateTo('读书魂')">
-        <image src="/static/读书魂.png" class="nav-icon"></image>
-        <text class="nav-text">读书魂</text>
-      </view>
-      <view class="nav-item" @click="navigateTo('小研帮')">
-        <image src="/static/小研帮.png" class="nav-icon"></image>
-        <text class="nav-text">小研帮</text>
-      </view>
-      <view class="nav-item" @click="navigateTo('研小fu')">
-        <image src="/static/研小fu.png" class="nav-icon"></image>
-      </view>
-      <view class="nav-item" @click="navigateTo('小研圈')">
-        <image src="/static/小研圈.png" class="nav-icon"></image>
-        <text class="nav-text">小研圈</text>
-      </view>
-      <view class="nav-item" @click="navigateTo('index')">
-        <image src="/static/上岸人.png" class="nav-icon"></image>
-        <text class="nav-text">上岸人</text>
-      </view>
-    </view>
+    
   </view>
 </template>
 
@@ -231,45 +213,46 @@ export default {
         console.error('获取用户信息失败', error);
       }
     },
-    navigateTo(page) {
-      if (page === 'guanzhu') {
-        uni.navigateTo({
-          url: '/pages/guanzhu/guanzhu'
-        });
-      } else if (page === 'fensi') {
-        uni.navigateTo({
-          url: '/pages/fensi/fensi'
-        });
-      } else if (page === 'bianjiziliao') {
-        uni.navigateTo({
-          url: '/pages/bianjiziliao/bianjiziliao'
-        });
-      } else if (page === 'index') {
-        uni.navigateTo({
-          url: '/pages/index/index'
-        });
-      } else if (page === 'dakajilu') {
-        uni.navigateTo({
-          url: '/pages/dakajilu/dakajilu'
-        });
-      }
-      // 处理其他页面的导航逻辑
+   navigateTo(page) {
+       // 定义页面映射
+       const pageMap = {
+         'guanzhu': '/pages/guanzhu/guanzhu',
+         'fensi': '/pages/fensi/fensi',
+         'bianjiziliao': '/pages/bianjiziliao/bianjiziliao',
+         'index': '/pages/index/index',
+         'dakajilu': '/pages/dakajilu/dakajilu',
+         'aihelper': '/pages/aihelper/aihelper' // 新增 aihelper 页面映射
+         // 根据需要添加更多映射
+       };
+   
+       const targetUrl = pageMap[page] || `/pages/${page}/${page}`;
+   
+       uni.navigateTo({
+         url: targetUrl
+       });
     },
+	navigateToMyFub() {
+	  const userId = uni.getStorageSync('user_id'); // 获取当前用户的 user_id
+	  uni.navigateTo({
+	    url: `/pages/myFub/myFub?user_id=${userId}` // 跳转到 myFub 页面
+	  });
+	},
     navigateToSettings() {
           uni.navigateTo({
             url: '/pages/shezhi/shezhi',
           });
         },
+    navigateToLeaderboard() {
+      uni.navigateTo({
+        url: '/pages/leaderboard/leaderboard'
+      });
+    },
 	activateButton(button) {
 	    this.activeButton = button;
 	    if (button === '收藏') {
 	      this.activeSubTab = '题库'; // 点击“收藏”时，默认选中“题库”子选项卡
 	    }
 	  },
-	  activateSubTab(subTab) {
-	    this.activeSubTab = subTab;
-	  },
-
   }
 }
 </script>
@@ -424,6 +407,13 @@ body, html {
   position: absolute; /* 绝对定位 */
   top: 100px; /* 顶部位置 */
   left: 230px; /* 左侧位置 */
+  font-size: 12px;
+  color: #666;
+}
+.fubi {
+  position: absolute; /* 绝对定位 */
+  top: 100px; /* 顶部位置 */
+  left: 220px; /* 左侧位置 */
   font-size: 12px;
   color: #666;
 }

@@ -47,104 +47,74 @@
       </view>
     </scroll-view>
 
-<!-- 在底部导航栏外面添加一个新图片元素，右下方 -->
-<view class="bottom-right-img" @click="navigateTo('yourPageName')">
-  <image src="/static/your-image.png" class="image-icon" />
-</view>
-
     <!-- 底部导航栏 -->
-<view class="bottom-nav">
-  <view class="nav-item" :class="{ active: activeNav === '读书魂' }" @click="navigateTo('读书魂')">
-    <image src="/static/读书魂.png" class="nav-icon"></image>
-    <text class="nav-text">读书魂</text>
-  </view>
-  <view class="nav-item" :class="{ active: activeNav === '小研帮' }" @click="navigateTo('小研帮')">
-    <image src="/static/小研帮.png" class="nav-icon"></image>
-    <text class="nav-text">小研帮</text>
-  </view>
-  <view class="nav-item" :class="{ active: activeNav === '研小fu' }" @click="navigateTo('研小fu')">
-    <image src="/static/研小fu.png" class="nav-icon"></image>
-  </view>
-  <view class="nav-item" :class="{ active: activeNav === '小研圈' }" @click="navigateTo('小研圈')">
-    <image src="/static/小研圈.png" class="nav-icon"></image>
-    <text class="nav-text">小研圈</text>
-  </view>
-  <view class="nav-item" :class="{ active: activeNav === 'zhuyehuodong' }" @click="navigateTo('zhuyehuodong')">
-    <image src="/static/上岸人.png" class="nav-icon"></image>
-    <text class="nav-text">上岸人</text>
-  </view>
-</view>
-
+    <view class="bottom-nav">
+      <!-- 每个 nav-item 代表底部导航栏中的一个按钮 -->
+      <view class="nav-item" @click="navigateTo('读书魂')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+        <text class="nav-text">读书魂</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('小研帮')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+        <text class="nav-text">小研帮</text>
+      </view>
+	  <view class="nav-item" @click="navigateTo('研小fu')">
+	    <image src="/static/yan小fu.png" class="nav-icon"></image>
+	  </view>
+      <view class="nav-item" @click="navigateTo('小研圈')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+        <text class="nav-text">小研圈</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('上岸人')">
+        <image src="/static/logo.png" class="nav-icon"></image>
+        <text class="nav-text">上岸人</text>
+      </view>
+    </view>
   </view>
 </template>
+
 <script>
 export default {
   data() {
     return {
       activeTab: '求解答', // 当前激活的标签
-      posts: [], // 帖子数据数组，将从云数据库获取
-      activeNav: '' // 当前激活的底部导航项
+      posts: [ // 帖子数据数组
+        {
+          author: 'Patisseris Land',
+          date: '刚刚发布',
+          content: '有没有小伙伴觉得张字老师的高数课，有关概念讲解的有点点难...',
+          images: ['/static/logo.png'], // 帖子包含的图片
+          followersCount: 15, // 关注人数
+          liked: false, // 是否已点赞
+          starred: false // 是否已收藏
+        },
+        {
+          author: '柯小布',
+          date: '4分钟前',
+          content: '各位大佬们有没有英语阅读的学习方法，想用提高一下。赐赐',
+          images: [], // 没有图片
+          followersCount: 10,
+          liked: false,
+          starred: false
+        },
+        {
+          author: '骑鱼吃小鱼',
+          date: '6分钟前',
+          content: '现在数学分指南二刷结束，是看81绝还是看题源...',
+          images: [], // 没有图片
+          followersCount: 10,
+          liked: false,
+          starred: false
+        }
+      ]
     };
   },
-  mounted() {
-    // 在页面加载完成时调用云函数获取帖子内容
-    this.fetchPosts();
-  },
   methods: {
-    // 设置激活的标签
-    setActiveTab(tab) {
+    setActiveTab(tab) { // 设置激活的标签
       this.activeTab = tab;
-      if (tab === '关注') {
-        uni.navigateTo({
-          url: '/pages/attention/attention' // 跳转到关注页面
-        });
-      }
-    },async fetchPosts() {
-  try {
-    const res = await uniCloud.callFunction({
-      name: 'getPosts'
-    });
-
-    // 打印响应结果，帮助调试
-    console.log('云函数响应结果：', res);
-
-    // 检查响应结果是否符合预期
-    if (res && res.result && res.result.success) {
-      // 如果成功，设置帖子数据
-      this.posts = res.result.data;
-    } else {
-      // 如果不成功，输出错误详情
-      console.error('获取帖子数据失败：', res.result);
-      uni.showToast({ title: '数据获取失败', icon: 'none' });
-    }
-  } catch (error) {
-    // 打印详细的错误信息，帮助调试
-    console.error('云函数调用失败:', error);
-    
-    // 提示用户网络或服务器问题
-    if (error.message && error.message.includes('timeout')) {
-      uni.showToast({ title: '请求超时，请稍后再试', icon: 'none' });
-    } else {
-      // 如果是其他错误，显示更详细的错误信息
-      uni.showToast({ title: `系统错误：${error.message}`, icon: 'none' });
-    }
-  }
-}
-,
-
-    // 跳转到指定页面
-    navigateTo(page) {
-      this.activeNav = page;
-      if (page === 'attention') {
-        uni.navigateTo({
-          url: '/pages/attention/attention'
-        });
-      } else {
-        // 处理其他页面的导航逻辑
-        uni.navigateTo({
-          url: `/pages/${page}/${page}`
-        });
-      }
+    },
+    navigateTo(page) { // 导航逻辑
+      // 在这里处理页面导航的逻辑
     }
   }
 };
@@ -271,6 +241,7 @@ export default {
   color: #bd3124; /* 关注人数颜色 */
   font-size: 14px; /* 字体大小 */
 }
+
 .answer-button {
   background-color: #f8f8f8; /* 按钮背景色 */
   color: #bd3124; /* 按钮文字颜色 */
@@ -298,79 +269,13 @@ export default {
   align-items: center; /* 居中对齐 */
 }
 
-.nav-item.active {
-  border: 2px solid red; /* 激活项添加红色边框 */
-}
 .nav-icon {
   width: 24px; /* 图标宽度 */
   height: 24px; /* 图标高度 */
 }
-.nav-item .activeIcon {
-  filter: brightness(0) saturate(100%) invert(38%) sepia(72%) saturate(445%) hue-rotate(0deg) brightness(102%) contrast(101%); /* 变为红色 */
-}
+
 .nav-text {
   font-size: 12px; /* 字体大小 */
   margin-top: 5px; /* 图标和文本之间的间距 */
-}
-
-.bottom-nav {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
-  height: 60px; /* 导航栏高度 */
-  background-color: #FFFFFF; /* 导航栏背景颜色 */
-  border-top: 1px solid white; /* 导航栏上方的黑色水平线 */
-  position: fixed; /* 固定在底部 */
-  bottom: 0;
-  width: 100%;
-}
-
-
-/* 导航项样式 */
-.nav-item {
-  display: flex;
-  flex-direction: row;
-  flex-direction: column;
-  align-items: center;
-}
-.nav-item.active {
-  border: 2px solid red; /* 激活态红色边框 */
-}
-
-/* 导航图标样式 */
-.nav-icon {
-  width: 24px;
-  height: 24px;
-}
-
-/* 导航文本样式 */
-.nav-text {
-  margin-top: 5px;
-  font-size: 12px;
-  color: #000000;
-}
-
-/* 修改第三个导航项的样式为圆角矩形填充为暗红色 */
-.nav-item:nth-child(3) {
-  width: 70px; /* 圆角矩形的宽度 */
-  height: 40px; /* 圆角矩形的高度 */
-  background-color: #bd3124; /* 填充颜色为暗红色 */
-  border-radius: 15px; /* 圆角半径为20px */
-  justify-content: center; /* 垂直居中 */
-  align-items: center; /* 水平居中 */
-}
-
-/* 第三个导航项中的加号样式 */
-.nav-item:nth-child(3)::before {
-  content: '+'; /* 加号字符 */
-  color: white; /* 加号颜色为白色 */
-  font-size: 24px; /* 加号大小 */
-  font-weight: bold; /* 加号加粗 */
-}
-
-/* 移除第三个导航项的图片 */
-.nav-item:nth-child(3) .nav-icon {
-  display: none;
 }
 </style>

@@ -115,22 +115,30 @@ export default {
     },
 
     async saveUserInfo() {
-      try {
-        const res = await uniCloud.callFunction({
-          name: 'updateUserInfo',
-          data: this.user
-        });
-
-        if (res.result.success) {
-          uni.showToast({ title: '保存成功', icon: 'success' });
-          uni.setStorageSync('userInfo', this.user);
-        } else {
-          uni.showToast({ title: res.result.message, icon: 'none' });
+        try {
+          const account = uni.getStorageSync('account'); // 获取用户唯一标识符
+          if (!account) {
+            uni.showToast({ title: '用户未登录', icon: 'none' });
+            return;
+          }
+    
+          const payload = { account, ...this.user }; // 将 account 与用户信息合并
+    
+          const res = await uniCloud.callFunction({
+            name: 'updateUserInfo',
+            data: payload
+          });
+    
+          if (res.result.success) {
+            uni.showToast({ title: '保存成功', icon: 'success' });
+            uni.setStorageSync('userInfo', this.user);
+          } else {
+            uni.showToast({ title: res.result.message, icon: 'none' });
+          }
+        } catch (error) {
+          uni.showToast({ title: '保存失败', icon: 'none' });
         }
-      } catch (error) {
-        uni.showToast({ title: '保存失败', icon: 'none' });
-      }
-    },
+      },
 
     updateNickname(newNickname) {
       this.user.nickname = newNickname; // 更新用户的昵称

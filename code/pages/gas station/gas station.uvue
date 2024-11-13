@@ -1,0 +1,230 @@
+<template>
+  <view class="container">
+    <!-- Header Section -->
+    <view class="header">
+      <text class="header-title">小研圈</text>
+      <view class="header-icons">
+        <image src="@/static/logo.png" class="icon" />
+      </view>
+    </view>
+
+    <!-- Tabs -->
+    <view class="tabs">
+      <text class="tab-item">求解答</text>
+      <text class="tab-item active-tab">加油站</text>
+      <text class="tab-item">关注</text>
+    </view>
+
+    <!-- Event Banner -->
+    <view class="banner">
+      <text class="banner-title">21天高数模拟卷打卡活动招募令</text>
+      <text class="banner-subtitle">每日一模拟，不模拟就淘汰～</text>
+      <text class="banner-subtitle">来吧，一起坚持21天，做行动派！</text>
+      <button class="banner-button">了解详情</button>
+    </view>
+
+    <!-- Posts List -->
+    <view class="post-list">
+      <!-- Post 1 -->
+      <view class="post">
+        <view class="post-header">
+          <image src="@/static/logo.png" class="avatar" />
+          <text class="username">bjarkeingels</text>
+          <text class="date">2024-10-19</text>
+          <text class="hot-label">hot</text>
+        </view>
+        <text class="post-content">行动上刻不容缓，心态上得失随缘。祝上岸。</text>
+        <image src="@/static/logo.png" class="post-image" />
+        <view class="post-actions">
+          <text class="action">207</text>
+          <text class="action">501</text>
+          <text class="action">789</text>
+          <text class="action">534</text>
+        </view>
+      </view>
+
+      <!-- Post 2 -->
+      <view class="post">
+        <view class="post-header">
+          <image src="@/static/logo.png" class="avatar" />
+          <text class="username">柯小布</text>
+          <text class="date">2024-10-18</text>
+        </view>
+        <text class="post-content">第二周。21天模拟，我已经打卡14天，坚持就是胜利呀~ #21天高数模拟卷打卡#</text>
+        <view class="post-images">
+          <image src="@/static/logo.png" class="note-image" />
+          <image src="@/static/logo.png" class="note-image" />
+          <image src="@/static/logo.png" class="note-image" />
+        </view>
+        <view class="post-actions">
+          <text class="action">120</text>
+          <text class="action">300</text>
+          <text class="action">450</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Bottom Navigation -->
+    <view class="bottom-nav">
+      <view class="nav-item">
+        <image src="@/static/logo.png" class="nav-icon" />
+        <text class="nav-text">读书魂</text>
+      </view>
+      <view class="nav-item">
+        <image src="@/static/logo.png" class="nav-icon" />
+        <text class="nav-text">小研帮</text>
+      </view>
+      <view class="nav-item active">
+        <image src="@/static/logo.png" class="nav-icon" />
+        <text class="nav-text">加油站</text>
+      </view>
+      <view class="nav-item">
+        <image src="@/static/logo.png" class="nav-icon" />
+        <text class="nav-text">小研圈</text>
+      </view>
+      <view class="nav-item">
+        <image src="@/static/logo.png" class="nav-icon" />
+        <text class="nav-text">上岸</text>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      // Add any data properties here
+    };
+  },
+  methods: {
+    // Add methods here for handling click events, data fetching, etc.
+  }
+};
+</script>
+
+<style>
+.container {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+/* Header styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px;
+}
+.header-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+.header-icons .icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Tabs styles */
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  background-color: #f2f2f2;
+  padding: 10px 0;
+}
+.tab-item {
+  color: #333;
+}
+.active-tab {
+  color: #ff5733;
+  font-weight: bold;
+}
+
+/* Banner styles */
+.banner {
+  background-color: #e6f7ff;
+  padding: 20px;
+  text-align: center;
+}
+.banner-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+.banner-subtitle {
+  font-size: 14px;
+  color: #666;
+}
+.banner-button {
+  margin-top: 10px;
+  background-color: #ff5733;
+  color: #ffffff;
+  padding: 5px 10px;
+}
+
+/* Post styles */
+.post-list {
+  padding: 16px;
+}
+.post {
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 16px;
+}
+.post-header {
+  display: flex;
+  align-items: center;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.username {
+  font-weight: bold;
+  margin-left: 10px;
+}
+.date {
+  margin-left: auto;
+  color: #888;
+}
+.hot-label {
+  background-color: #ff5733;
+  color: #ffffff;
+  padding: 2px 5px;
+  border-radius: 5px;
+}
+.post-content {
+  margin: 10px 0;
+}
+.post-image {
+  width: 100%;
+  margin: 10px 0;
+}
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+}
+.action {
+  color: #333;
+}
+
+/* Bottom Navigation styles */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  background-color: #f2f2f2;
+}
+.nav-item {
+  text-align: center;
+}
+.nav-icon {
+  width: 24px;
+  height: 24px;
+}
+.nav-text {
+  font-size: 12px;
+  margin-top: 4px;
+}
+</style>
