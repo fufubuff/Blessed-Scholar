@@ -1,0 +1,9 @@
+{
+  "name": "chat",
+    "version": "1.0.0",
+    "description": "Chat function with OpenAI API",
+    "main": "index.js",
+    "dependencies": {
+      "axios": "^1.7.7"
+    }
+}
