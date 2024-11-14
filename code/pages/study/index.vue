@@ -24,17 +24,33 @@
 				<view>小研快讯</view>
 			</view>
 			<view class="tab" @click="toUrl('/pages/study/upload')">
-				<image class="tab_img" src="../../static/xiaoyan_alerts.png"></image>
+				<image class="tab_img" src="../../static/xiaoyan_topic.png"></image>
 				<view>资料上传</view>
 			</view>
 		</view>
 		<!-- 列表 -->
 		<view class="list">
-			<view class="item" v-for="item in 3">
-				<image class="item_img" mode="aspectFill" src="../../static/3147e1c70b714c96be73f9f3458c057d.jpg"/>
+			<view class="item">
+				<image class="item_img" mode="aspectFill" src="../../static/sh.jpg"/>
 				<view class="item_body">
 					<view class="item_title">宋浩高等数学</view>
 					<view class="item_desc">13次课程逆袭考研</view>
+					<view class="item_btn">点击看课</view>
+				</view>
+			</view>
+			<view class="item">
+				<image class="item_img" mode="aspectFill" src="../../static/wd.jpg"/>
+				<view class="item_body">
+					<view class="item_title">王道考研</view>
+					<view class="item_desc">大量考研习题资料与考试技巧</view>
+					<view class="item_btn">点击看课</view>
+				</view>
+			</view>
+			<view class="item">
+				<image class="item_img" mode="aspectFill" src="../../static/zy.jpg"/>
+				<view class="item_body">
+					<view class="item_title">计算机组成原理</view>
+					<view class="item_desc">系统回顾计算机组成原理课程</view>
 					<view class="item_btn">点击看课</view>
 				</view>
 			</view>
@@ -109,9 +125,11 @@ page{
 .item_title{
 	font-size: 40rpx;
 	font-weight: bold;
+	color: white
 }
 .item_desc{
 	margin-bottom: 10rpx;
+	color: white
 }
 .item_btn{
 	color: #fff;

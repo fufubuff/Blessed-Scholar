@@ -10,7 +10,7 @@
 		</view>
 		<view style="height: 44px;"></view>
 		<view class="list">
-			<view class="item" @click="toDetail" v-for="item in 10">
+			<view class="item" @click="toDetail">
 				<view class="title">注意：25考研各省市网上确认时间及要求</view>
 				<view class="flex_space content">
 					<view style="margin-right: 15rpx;">
