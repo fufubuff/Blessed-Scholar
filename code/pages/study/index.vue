@@ -23,6 +23,10 @@
 				<image class="tab_img" src="../../static/xiaoyan_alerts.png"></image>
 				<view>小研快讯</view>
 			</view>
+			<view class="tab" @click="toUrl('/pages/study/upload')">
+				<image class="tab_img" src="../../static/xiaoyan_alerts.png"></image>
+				<view>资料上传</view>
+			</view>
 		</view>
 		<!-- 列表 -->
 		<view class="list">

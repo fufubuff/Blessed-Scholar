@@ -3,7 +3,7 @@
         <!-- 导航 -->
         <view class="uni-page-head status_bar" style="top: 0;">
             <view class="flex_space" style="flex:1">
-                <svg width="26" height="26" viewBox="0 0 32 32"><path d="M21.781 7.844l-9.063 8.594 9.063 8.594q0.25 0.25 0.25 0.609t-0.25 0.578q-0.25 0.25-0.578 0.25t-0.578-0.25l-9.625-9.125q-0.156-0.125-0.203-0.297t-0.047-0.359q0-0.156 0.047-0.328t0.203-0.297l9.625-9.125q0.25-0.25 0.578-0.25t0.578 0.25q0.25 0.219 0.25 0.578t-0.25 0.578z" fill="#000000"></path></svg>
+                <svg @click="toBack" width="26" height="26" viewBox="0 0 32 32"><path d="M21.781 7.844l-9.063 8.594 9.063 8.594q0.25 0.25 0.25 0.609t-0.25 0.578q-0.25 0.25-0.578 0.25t-0.578-0.25l-9.625-9.125q-0.156-0.125-0.203-0.297t-0.047-0.359q0-0.156 0.047-0.328t0.203-0.297l9.625-9.125q0.25-0.25 0.578-0.25t0.578 0.25q0.25 0.219 0.25 0.578t-0.25 0.578z" fill="#000000"></path></svg>
                 <view class="uni-page-head__title">上传资料</view>
                 <view @click="updateInformation" style="margin-right: 10rpx;" class="color">发布</view>
             </view>
@@ -16,8 +16,14 @@
             </view>
             <view class="form-item">
                 <view class="label">资料类型选择</view>
-                <picker style="flex:1;text-align: right;" @change="bindPickerChange" :value="index" :range="infoTypes">
-                    <view class="uni-input">{{index==-1?'请选择':infoTypes[index]}}</view>
+                <picker style="flex:1;text-align: right;" @change="bindTypeChange" :value="typeIndex" :range="infoTypes">
+                    <view class="uni-input">{{typeIndex==-1?'请选择':infoTypes[typeIndex]}}</view>
+                </picker>
+            </view>
+            <view class="form-item">
+                <view class="label">资料科目选择</view>
+                <picker style="flex:1;text-align: right;" @change="bindSubjectChange" :value="subjectIndex" :range="subjectTypes">
+                    <view class="uni-input">{{subjectIndex==-1?'请选择':subjectTypes[subjectIndex]}}</view>
                 </picker>
             </view>
             <view class="form-item">
@@ -38,8 +44,10 @@
     export default {
         data() {
             return {
-                index: -1,
-                infoTypes: [ '小研题库-专业课', '课程中心-专业课'],
+                typeIndex: -1,
+                subjectIndex: -1,
+                infoTypes: ['小研题库', '课程中心'],
+                subjectTypes: ['专业课', '英语', '数学', '思政'],
                 title: '',
                 content: '',
                 coverUrl: '',
@@ -47,13 +55,19 @@
             }
         },
         methods: {
-            bindPickerChange: function(e) {
-                this.index = e.detail.value
+            bindTypeChange: function(e) {
+                this.typeIndex = e.detail.value;
+            },
+            bindSubjectChange: function(e) {
+                this.subjectIndex = e.detail.value;
             },
             toSearch() {
                 uni.navigateTo({
                     url: '/pages/study/search'
                 })
+            },
+            toBack() {
+            uni.navigateBack();
             },
             switchTab(index) {
                 this.activeIndex = index;
@@ -81,28 +95,64 @@
                         throw new Error('文件上传失败，未获取到 fileID');
                     }
 
-                    this.coverUrl = uploadRes.fileID;
-                    console.log('封面图片URL:', this.coverUrl);
+                    // 获取文件的 URL
+                    const fileUrlRes = await uniCloud.getTempFileURL({
+                        fileList: [uploadRes.fileID]
+                    });
+
+                    if (fileUrlRes.fileList.length > 0 && fileUrlRes.fileList[0].tempFileURL) {
+                        this.coverUrl = fileUrlRes.fileList[0].tempFileURL;
+                        console.log('封面图片URL:', this.coverUrl);
+                    } else {
+                        throw new Error('获取文件URL失败');
+                    }
+
+                    uni.showToast({
+                        title: '封面上传成功',
+                        icon: 'success'
+                    });
                 } catch (error) {
-                    console.error('选择图片失败:', error);
+                    uni.showToast({
+                        title: error.message || '上传失败，请重试',
+                        icon: 'none'
+                    });
                 }
             },
             async updateInformation() {
                 const date = new Date().toISOString().split('T')[0];
+                let subject = '';
+                switch (this.subjectIndex) {
+                    case 0:
+                        subject = 'main';
+                        break;
+                    case 1:
+                        subject = 'english';
+                        break;
+                    case 2:
+                        subject = 'math';
+                        break;
+                    case 3:
+                        subject = 'politics';
+                        break;
+                    default:
+                        console.log('未选择有效的资料科目');
+                        return;
+                }
+
                 let data = {
                     title: this.title,
-                    subject: 'main',
+                    subject: subject,
                     cover_url: this.coverUrl,
                     date: date,
                     link: this.content
                 };
 
                 let collectionName = '';
-                if (this.infoTypes[this.index] === '课程中心-专业课') {
+                if (this.infoTypes[this.typeIndex] === '课程中心') {
                     collectionName = 'course';
                     data.course_name = data.title;
                     delete data.title;
-                } else if (this.infoTypes[this.index] === '小研题库-专业课') {
+                } else if (this.infoTypes[this.typeIndex] === '小研题库') {
                     collectionName = 'topic';
                     data.topic_name = data.title;
                     delete data.title;
@@ -113,7 +163,7 @@
 
                 try {
                     const res = await uniCloud.callFunction({
-                        name: 'index',
+                        name: 'updateInformation',
                         data: {
                             collection: collectionName,
                             data: data,
@@ -124,6 +174,9 @@
                 } catch (error) {
                     console.error('发布失败:', error);
                 }
+				uni.navigateTo({
+				    url: '/pages/study/index'
+				});
             }
         }
     }
