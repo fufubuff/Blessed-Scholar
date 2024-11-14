@@ -1,6 +1,17 @@
 {
   "pages": [
-   
+     {
+	        "path": "pages/publish/publish",  
+	        "style": {
+	          "navigationBarTitleText": ""
+	        }
+	  },
+	  {
+	    "path": "pages/postxijie/postxijie",
+	    "style": {
+	      "navigationBarTitleText": ""
+	    }
+	  },
     {
       "path": "pages/welcome/welcome",
       "style": {
