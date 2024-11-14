@@ -67,16 +67,16 @@ display: flex;
 justify-content: space-between;
 }
 
-.amount {
-font-weight: bold;
+.amount{
+	font-weight: 550;
 }
 
 .amount.positive {
-color: green;
+color: #bd402f;
 }
 
 .amount.negative {
-color: red;
+color: #999;
 }
 
 .date {

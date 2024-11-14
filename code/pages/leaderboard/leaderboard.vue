@@ -1,9 +1,16 @@
 <template>
   <view class="container">
     <!-- 背景图片 -->
-    <view class="background">
-      <image src="/static/bghxy.jpg" style="width:100%; height:100%;" mode="aspectFill" />
-    </view>
+    <div class="header-image">
+		<img :src="imageSrc" alt="Fub Rank" />
+		<!-- 灰色遮罩层 -->
+		<div class="overlay"></div> 
+    </div>
+	
+	<!-- 遮罩层和标题 -->
+	<div class="overlay-title">
+	    <h1>{{ username }} 功德已拉满</h1>
+	</div>
 
     <!-- 排行榜 -->
     <view class="leaderboard">
@@ -32,6 +39,15 @@
       </view>
       <view class="rank">{{ currentUser.rank || '-' }}</view>
     </view>
+	
+	<!-- 返回按钮 -->
+	<view class="back-btn" @click="goBack">
+	    <image src="/static/back-icon.png" alt="Back" />
+	</view>
+	
+	<!-- 福小铺按钮 -->
+	<view class="shop-button" @click="goToShop"></view>
+	
   </view>
 </template>
 
@@ -39,8 +55,10 @@
 export default {
   data() {
     return {
+	  imageSrc: '/static/bghxy.jpg',
       users: [], // 排行榜用户数据
-      currentUser: {} // 当前用户信息
+      currentUser: {} ,// 当前用户信息
+	  username: '' // 排名第一用户的用户名
     };
   },
   async created() {
@@ -66,6 +84,7 @@ export default {
     if (response.result && response.result.code === 0) {
       this.users = response.result.data.users;
       this.currentUser = response.result.data.currentUser || {};
+	  this.username = this.users.length > 0 ? this.users[0].nickname : ''; // 获取排名第一用户的用户名
     } else {
       console.error('Failed to fetch leaderboard data:', response.result.msg);
       uni.showToast({ title: '获取排行榜数据失败', icon: 'none' });
@@ -81,40 +100,84 @@ export default {
       uni.navigateTo({
         url: `/pages/myFub/myFub?user_id=${userId}`
       });
+  },
+  
+    goToShop() {
+        uni.navigateTo({
+          url: '/pages/xiaofupu/xiaofupu'  
+        });
+      },
+  
+  // 返回上一个页面
+      goBack() {
+        uni.navigateBack(); // 返回上一页
+      }
     }
-  }
+  
 };
 </script>
 
 <style>
 .container {
   position: relative;
-  width: 100%;
-  height: 100%;
-  background-color: #fff;
+  //width: 100%;
+  //height: 100%;
+  //background-color: #fff;
+
 }
 
 /* 背景图片 */
-.background image {
+.header-image {
+  position: relative;
+  width: 100%;
+  height: 230px;
+}
+
+.header-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 遮罩层和标题 */
+.overlay {
   position: absolute;
   top: 0;
+  right: 0;
+  bottom: 0;
   left: 0;
-  width: 100%;
-  height: 35%; /* 背景图片覆盖顶部35%区域 */
-  z-index: -1;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 10px;
+  z-index: 0;
 }
+
+
+.overlay-title {
+  position: absolute;
+    top: 10px; /* 距离顶部一点点 */
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    text-align: center;
+    font-size: 10px;
+    z-index: 1; /* 确保标题在遮罩层上方 */
+}
+
 
 /* 排行榜 */
 .leaderboard {
   position: relative;
   width: 90%;
-  margin-top: 35%; /* 排行榜紧跟在背景图片下方 */
+  margin-top: -10%; /* 排行榜紧跟在背景图片下方 */
   padding: 15px 10px;
-  background-color: #fff;
 }
 
 /* 每个用户条目 */
-.user, .current-user {
+.user {
   display: flex;
   align-items: center;
   border-radius: 10px;
@@ -124,10 +187,24 @@ export default {
   margin-bottom: 5px; /* 每个条目之间增加间距 */
 }
 
+/* 固定底部的“我的条目” */
+.current-user {
+  position: fixed;
+  bottom: 20px;
+  width: 90%;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+  background-color: #f2f2f2; /* 设置白色背景色以和阴影形成对比 */
+  margin-bottom: 5px; /* 每个条目之间增加间距 */
+}
+/*
 .user:last-child, .current-user:last-child {
   border-bottom: none;
 }
-
+*/
 .avatar image {
   width: 40px;
   height: 40px;
@@ -170,5 +247,28 @@ export default {
   color: #d9363e; /* 排名颜色 */
   font-weight: bold;
   font-style: italic;
+}
+
+/* 返回按钮 */
+.back-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+
+.back-btn image {
+  width: 25px;
+  height: 25px;
+}
+.shop-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background: url('/static/fuxiaopu-icon.png') no-repeat center center;
+  background-size: contain;
+  cursor: pointer;
 }
 </style>

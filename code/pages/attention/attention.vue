@@ -8,21 +8,10 @@
     </view>
 
     
-    <!-- Tab Navigation -->
-    <view class="tab-bar">
-      <view class="tab-container" @click="setActiveTab('求解答')">
-        <text class="tab" :class="{ active: activeTab === '求解答' }">求解答</text>
-        <view v-if="activeTab === '求解答'" class="underline"></view>
-      </view>
-      <view class="tab-container" @click="setActiveTab('加油站')">
-        <text class="tab" :class="{ active: activeTab === '加油站' }">加油站</text>
-        <view v-if="activeTab === '加油站'" class="underline"></view>
-      </view>
-      <view class="tab-container" @click="setActiveTab('关注')">
-        <text class="tab" :class="{ active: activeTab === '关注' }">关注</text>
-        <view v-if="activeTab === '关注'" class="underline"></view>
-      </view>
-    </view>
+
+
+
+
 
         <!-- 用户头像横向排列 -->
         <view class="user-list">
@@ -109,28 +98,7 @@
       </view>
     </scroll-view>
 
-    <!-- Bottom Navigation Bar -->
-    <view class="bottom-nav">
-      <view class="nav-item" @click="navigateTo('读书魂')">
-        <image src="/static/读书魂.png" class="nav-icon"></image>
-        <text class="nav-text">读书魂</text>
-      </view>
-      <view class="nav-item" @click="navigateTo('小研帮')">
-        <image src="/static/小研帮.png" class="nav-icon"></image>
-        <text class="nav-text">小研帮</text>
-      </view>
-      <view class="nav-item" @click="navigateTo('研小fu')">
-        <image src="/static/研小fu.png" class="nav-icon"></image>
-      </view>
-      <view class="nav-item" @click="navigateTo('小研圈')">
-        <image src="/static/小研圈.png" class="nav-icon"></image>
-        <text class="nav-text">小研圈</text>
-      </view>
-      <view class="nav-item" @click="navigateTo('zhuyehuodong')">
-        <image src="/static/上岸人.png" class="nav-icon"></image>
-        <text class="nav-text">上岸人</text>
-      </view>
-    </view>
+    
   </view>
 </template>
 
@@ -218,11 +186,6 @@ export default {
   methods: {
     setActiveTab(tab) { // 设置激活的标签
       this.activeTab = tab;
-	  if (tab === '求解答') {
-	      uni.navigateTo({
-	        url: '/pages/qiujieda/qiujieda' // 跳转到求解答页面
-	      });
-	    }
     },
     setActiveContent(content) {
       this.activeContent = content;

@@ -78,16 +78,8 @@
           <text>{{ selectedDate }}</text>
         </view>
       </picker>
-   </view>
-   
-   
-	<view class="custom-assistant-selector">
-	  <text>定制我的助手性格：</text>
-	  <button @click="goToCustomizeAssistant">定制性格</button>
+    </view>
   </view>
-  
-  
-   </view>
 </template>
 
 
@@ -145,54 +137,6 @@ export default {
     },
   },
   methods: {
-  async loadInitialState() {
-    // 异步加载数据...
-    const assistantIndex = await new Promise((resolve, reject) => {
-      uni.getStorage({
-        key: 'selectedAssistantIndex',
-        success: (res) => resolve(res.data),
-        fail: () => reject('未找到保存的助手性格选择')
-      });
-    });
-    const savedIndex = uni.getStorageSync('selectedAssistantIndex');
-    console.log('Loaded Assistant Index:', savedIndex); // 确认加载的值
-    if (savedIndex !== undefined) {
-      this.selectedAssistantIndex = assistantIndex;
-      this.selectedAssistantLabel = this.assistantOptions[assistantIndex];
-      this.selectedAssistantClass = this.assistantClasses[assistantIndex];
-    }
-
-    // 加载用户输入
-    const userInput = await new Promise((resolve, reject) => {
-      uni.getStorage({
-        key: 'userInput',
-        success: (res) => resolve(res.data),
-        fail: () => reject('未找到保存的用户输入')
-      });
-    });
-
-    if (userInput !== undefined) {
-      this.userInput = userInput;
-    }
-  },
-    saveAssistantSelection(index) {
-        this.selectedAssistantIndex = index;
-        // 同步保存
-        uni.setStorageSync('selectedAssistantIndex', index);
-      },
-    
-      // 保存用户的输入
-      saveUserInput(input) {
-        this.userInput = input;
-        // 异步保存
-        uni.setStorage({
-          key: 'userInput',
-          data: input,
-          success: function () {
-            console.log('用户输入保存成功');
-          }
-        });
-      },
     // 保存昵称
     async saveNickname() {
       this.editingNickname = false;
@@ -200,14 +144,13 @@ export default {
       this.messages = [];
       await this.assistantIntroduce();
     },
+
     // 切换 AI 助手性格
     async changeAssistant(e) {
       this.selectedAssistantIndex = e.detail.value;
       this.selectedAssistantLabel = this.assistantOptions[this.selectedAssistantIndex];
       this.selectedAssistantClass = this.assistantClasses[this.selectedAssistantIndex];
       // 切换性格时清空当前聊天记录
-	  uni.setStorageSync('selectedAssistantIndex', this.selectedAssistantIndex);
-	  console.log('Saving Assistant Index:', this.selectedAssistantIndex);
       this.messages = [];
       // 让助手重新自我介绍
       await this.assistantIntroduce();
@@ -221,12 +164,7 @@ export default {
       this.messages = [];
       await this.assistantIntroduce();
     },
-     goToCustomizeAssistant() {
-        // 这里假设你已经有一个定制页面的路由设置
-        uni.navigateTo({
-          url: '/pages/customizeAI/customizeAI',
-        });
-      },
+
     // 发送消息
     async sendMessage() {
       if (this.userInput.trim() === '') return;
@@ -496,10 +434,14 @@ export default {
     },
   mounted() {
     // 调用 getUserId 方法获取用户ID
-	this.loadInitialState();
     this.getUserId();
-	
   },
+  
+  // 在 aihelper 页面生命周期中隐藏 tabBar
+  onShow() {
+    uni.hideTabBar();
+  }
+  
 };
 </script>
 
@@ -771,29 +713,6 @@ export default {
   background-color: #fff;
   font-size: 16px;
   color: #333;
-}
-.custom-assistant-selector {
-  padding: 10px;
-  background-color: var(--primary-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.custom-assistant-selector text {
-  margin-right: 10px;
-  font-size: 16px;
-  color: #333;
-}
-
-.custom-assistant-selector button {
-  padding: 5px 10px;
-  background-color: var(--secondary-color);
-  color: #fff;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  cursor: pointer;
 }
 
 </style>

@@ -26,33 +26,38 @@ export default {
     };
   },
   methods: {
-    async register() {
-      try {
-        const { account, password, confirmPassword } = this.form;
+     async register() {
+        try {
+          const { account, password, confirmPassword } = this.form;
+      
+          // 检查密码是否一致
+          if (password !== confirmPassword) {
+            return uni.showToast({ title: '密码不一致', icon: 'none' });
+          }
+      
+          // 调用云函数注册用户
+          const callRes = await uniCloud.callFunction({
+            name: 'userRegister',
+            data: { account, password }
+          });
+      
+          if (callRes.result && callRes.result.success) {
+        
+			
+			// 存储 account 信息
+			uni.setStorageSync('account', this.form.account);
+			
     
-        // 检查密码是否一致
-        if (password !== confirmPassword) {
-          return uni.showToast({ title: '密码不一致', icon: 'none' });
+            uni.showToast({ title: '注册成功', icon: 'success' });
+            uni.redirectTo({ url: '/pages/profileComplete/profileComplete' });
+          } else {
+            uni.showToast({ title: callRes.result.message || '注册失败', icon: 'none' });
+          }
+        } catch (error) {
+          uni.showToast({ title: '调用云函数失败', icon: 'none' });
+          console.error(error);
         }
-    
-        // 调用云函数注册用户
-        const callRes = await uniCloud.callFunction({
-          name: 'userRegister',
-          data: { account, password }
-        });
-    
-        if (callRes.result && callRes.result.success) {
-		  
-          uni.showToast({ title: '注册成功', icon: 'success' });
-          uni.redirectTo({ url: '/pages/profileComplete/profileComplete' });
-        } else {
-          uni.showToast({ title: callRes.result.message || '注册失败', icon: 'none' });
-        }
-      } catch (error) {
-        uni.showToast({ title: '调用云函数失败', icon: 'none' });
-        console.error(error);
       }
-    }
   }
 };
 </script>
