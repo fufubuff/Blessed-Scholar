@@ -1,14 +1,13 @@
-// cloudfunctions/chat/index.js
 'use strict';
 
 const axios = require('axios');
 const db = uniCloud.database();
 
 // 从环境变量中获取 API 密钥
-const API_KEY = 'sk-mvOc5002d4fec6492dda97092933450e3daea29ad09eYKtV'; // 推荐使用环境变量存储 API 密钥
+const API_KEY = 'sk-mvOc5002d4fec6492dda97092933450e3daea29ad09eYKtV'; // 使用环境变量存储 API 密钥
 
 exports.main = async (event, context) => {
-  const { question, assistantRole, userId, isIntroduction = false, helpType, assistantNickname } = event;
+  const { question, assistantRole, userId, isIntroduction = false, helpType, assistantNickname, studySituation, weakness, aipersonality } = event;
 
   // 参数验证
   if (!userId || !assistantRole) {
@@ -43,7 +42,7 @@ exports.main = async (event, context) => {
   // 从数据库获取最近的聊天记录
   const chatHistoryCollection = db.collection('chat_history');
   let previousMessages = [];
-  let chatHistoryRes = null; // 保存聊天记录查询结果
+  let chatHistoryRes = null;
   try {
     chatHistoryRes = await chatHistoryCollection.where({
       user_id: userId,
@@ -68,7 +67,7 @@ exports.main = async (event, context) => {
   // 添加助手的角色描述
   messages.push({
     role: 'system',
-    content: `你是一位合格的考研助手，具有耐心，能够安慰人，帮助用户解答考研疑惑，提供情感支持和专业建议。你的性格是：${assistantRole}。`,
+    content: `你是一位合格的考研助手，具有耐心，能够安慰人，帮助用户解答考研疑惑，提供情感支持和专业建议。你的性格是：${assistantRole},${aipersonality},请你尽可能地夸张地表现你的性格。`,
   });
 
   // 添加帮助类型提示
@@ -81,6 +80,24 @@ exports.main = async (event, context) => {
 
   // 添加用户信息到系统提示中
   if (userInfo && userInfo.nickname) {
+    if (studySituation) {
+      messages.push({
+        role: 'system',
+        content: `用户的学习情况是：${studySituation}。请在回复中考虑这些信息，根据用户目前的学习状态提供帮助。`,
+      });
+    }
+    if (weakness) {
+      messages.push({
+        role: 'system',
+        content: `用户的薄弱点是：${weakness}。请在回复中考虑这些信息，针对用户的薄弱点提供针对性帮助和训练安排。`,
+      });
+    }
+	if (aipersonality) {
+	  messages.push({
+	    role: 'system',
+	    content: `用户的希望你的语气能够模仿：${aipersonality}。请在回复中使用用户希望你扮演的性格,尽量体现得夸张一些。`,
+	  });
+	}
     messages.push({
       role: 'system',
       content: `用户的昵称是 ${userInfo.nickname}，专业是 ${userInfo.major || '未提供'}，学校是 ${userInfo.school || '未提供'}。请在回复中考虑这些信息。`,
@@ -124,7 +141,7 @@ exports.main = async (event, context) => {
   // API 请求头
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${API_KEY}`, // 使用环境变量中的 API_KEY
+    'Authorization': `Bearer ${API_KEY}`,
   };
 
   try {
