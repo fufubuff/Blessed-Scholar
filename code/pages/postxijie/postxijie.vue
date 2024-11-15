@@ -14,28 +14,31 @@
     <!-- Help Request Details -->
     <div class="request-details">
       <div class="user-info">
-        <img class="avatar" src="/static/logo.png" alt="User Avatar" /> <!-- 用户头像 -->
+        <img class="avatar" src="/static/1118.png" alt="User Avatar" /> <!-- 用户头像 -->
         <div class="user-text">
-          <text class="username">SE we love it</text> <!-- 用户名 -->
+          <text class="username">Patisseris Land</text> <!-- 用户名 -->
           <text class="timestamp">刚刚发布</text> <!-- 发布时间 -->
         </div>
       </div>
       <div class="request-content">
-        <text class="question">有人会开发基于LLM大模型接口的软件吗？</text> <!-- 问题标题 -->
-        <text class="description">求支付宝接口巨款</text> <!-- 问题描述 -->
+        <text class="question">有没有小伙伴觉得张字老师的高数课，有关概念讲解的有点点难...</text> <!-- 问题标题 -->
+        <text class="description"></text> <!-- 问题描述 -->
       </div>
     </div>
 
     <!-- Group Info -->
     <div class="group-info">
-      <img class="group-image" src="/static/logo.png" alt="Group Image" /> <!-- 小组或项目图片 -->
+      <img class="group-image" src="/static/1115.png" alt="Group Image" /> <!-- 小组或项目图片 -->
     </div>
-
+<div class="line">
+	
+</div>
     <!-- Help Statistics -->
     <div class="help-stats">
-      <text>0人已求助</text> <!-- 显示已求助人数 -->
-      <text>收藏</text> <!-- 显示收藏按钮 -->
+      <text class="ask">0人已求助</text> <!-- 显示已求助人数 -->
+      <button class="shoucang" >收藏</button> <!-- 显示收藏按钮 -->
     </div>
+
 
     <div class="help-stats2">
       <text>求助回复</text> 
@@ -158,7 +161,10 @@ export default {
   display: block;  /* 确保每个文本独占一行 */
   padding-left: 4em;  /* 添加左边的空白，2em 等同于两个字符的宽度 */
 }
-
+.ask {
+  font-size: 14px; /* 设置问题描述字体大小 */
+  padding-left: 4em;  /* 添加左边的空白，2em 等同于两个字符的宽度 */
+}
 /* Group Information Section */
 .group-info {
   display: flex; /* 使用 flex 布局 */
@@ -177,7 +183,6 @@ export default {
 /* Help Statistics Section */
 .help-stats {
   display: flex; /* 使用 flex 布局 */
-  justify-content: space-between; /* 两个部分之间平均分配 */
   align-items: center; /* 垂直居中 */
   margin-top: 15px; /* 设置顶部间距 */
   font-size: 10px; /* 设置字体大小 */
@@ -191,6 +196,7 @@ export default {
   margin-top: 15px; /* 设置顶部间距 */
   font-size: 10px; /* 设置字体大小 */
   color: #666; /* 设置字体颜色 */
+    margin-top: 2px; /* 减少与上方内容的间距 */
 }
 
 .help-stats text:first-child {
@@ -233,4 +239,26 @@ export default {
   border-radius: 50%; /* 让箭头图标变圆润 */ /* 给箭头周围增加一点间距 */
   transition: background-color 0.3s; /* 添加背景色变化效果 */
 }
+.shoucang {
+  background-color: #ff4d4f; /* 按钮背景色 */
+  color: #fff; /* 按钮文字颜色 */
+  font-size: 14px; /* 字体大小 */
+  font-weight: bold; /* 加粗字体 */
+  padding: 0.1px 6px; /* 调整内边距控制按钮大小 */
+  border-radius: 15px; /* 圆角 */
+  border: none; /* 无边框 */
+  cursor: pointer; /* 鼠标悬停效果 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 150px; /* 增加左侧间距，使按钮右移 */
+}
+.line {
+  width: 37%; /* 横线的宽度 */
+  border-top: 2px solid #ddd; /* 设置横线的颜色和厚度 */
+  margin-left: 50px; /* 将横线向右移动 */
+  margin-top: 10px; /* 减少与上方内容的间距 */
+  margin-bottom: -9px; /* 减少与下方内容的间距 */
+}
+
 </style>

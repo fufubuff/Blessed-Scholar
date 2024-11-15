@@ -67,9 +67,18 @@ export default {
         },
         openLink(link) {
             if (link) {
-                uni.navigateTo({
-                    url: `/pages/webview/webview?url=${encodeURIComponent(link)}`
-                });
+                try {
+                    const encodedLink = encodeURIComponent(link);
+                    uni.navigateTo({
+                        url: `/pages/webview/webview?url=${encodedLink}`
+                    });
+                } catch (error) {
+                    console.error('URL 编码失败:', error);
+                    uni.showToast({
+                        title: '无效的链接',
+                        icon: 'none'
+                    });
+                }
             } else {
                 uni.showToast({
                     title: '无效的链接',

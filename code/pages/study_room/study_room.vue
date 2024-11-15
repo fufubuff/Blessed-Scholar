@@ -4,7 +4,7 @@
     <div class="header-image">
       <img :src="imageSrc" alt="Study Room" />
       <div class="overlay">
-        <h1>{{ username }} 霸占了自习室封面</h1>
+        <h1 v-if="ranking === 1">{{ nickname + ' 霸占了自习室封面' }}</h1>
         <div class="stats">
           <p><span>{{ numberOfPeople }}</span> 人正在专注中</p>
           <p><span>{{ ranking }}</span> 您当前的排名 </p>
@@ -53,20 +53,13 @@ export default {
     return {
       imageSrc: '/static/bghxy.jpg',
       userAvatar: '', // 初始的默认头像
-      username: 'hxy',
-      numberOfPeople: 6,
-      ranking: 3,
+      nickname: '',
+      numberOfPeople: 0, // 初始值待动态设置
+      ranking: 0, // 当前排名
       timeSpentInSeconds: 0,  // 存储学习的秒数
       formattedTime: '0h 0min', // 存储显示的时间格式
-      studyInProgress: false,  // 新增：判断学习是否进行
-      leaderboard: [
-        { name: 'hxy', avatar: '/static/hxy.jpg', timeSpent: 330 },
-        { name: 'wq', avatar: '/static/wq.jpg', timeSpent: 255 },
-        { name: 'mx', avatar: '/static/mx.jpg', timeSpent: 225 },
-        { name: 'xh', avatar: '/static/xh.jpg', timeSpent: 150 },
-        { name: 'cl', avatar: '/static/cl.jpg', timeSpent: 110 },
-        { name: 'ly', avatar: '/static/ly.jpg', timeSpent: 60 },
-      ],
+      studyInProgress: false,  // 判断学习是否进行
+      leaderboard: [],  // 用来存储当天的排行榜数据
       timer: null,  // 计时器
     };
   },
@@ -91,11 +84,7 @@ export default {
       const minutes = Math.floor((seconds % 3600) / 60);
       return `${hours}h ${minutes}min`;
     },
-    // 更新排行榜，基于用户学习时长排序
-    updateLeaderboard() {
-      this.leaderboard.sort((a, b) => b.timeSpent - a.timeSpent);
-      this.ranking = this.leaderboard.findIndex(user => user.name === this.username) + 1;
-    },
+
     // 获取圆形背景样式
     getCircleStyle(index) {
       if (index === 0) {
@@ -121,6 +110,7 @@ export default {
       }
     },
 
+    // 获取用户头像
     async fetchUserAvatar() {
       const userId = uni.getStorageSync('user_id');
       if (userId) {
@@ -130,58 +120,125 @@ export default {
             data: { userId: userId }
           });
     
-          console.log('Cloud function response:', res);  // 打印返回数据，检查头像字段
-          if (res.result && res.result.data.avatarUrl) {
-            this.userAvatar = res.result.data.avatarUrl;  // 确保更新头像 URL
-            console.log('Updated Avatar URL:', this.userAvatar);  // 打印更新后的头像 URL
+          if (res.result && res.result.data && res.result.data.avatarUrl) {
+            this.userAvatar = res.result.data.avatarUrl;
+          } else {
+            this.userAvatar = '/static/default-avatar.jpg';  // 使用默认头像
           }
         } catch (error) {
           console.error('获取用户头像失败:', error);
+          this.userAvatar = '/static/default-avatar.jpg';
         }
+      } else {
+        this.userAvatar = '/static/default-avatar.jpg';
       }
     },
-	// 在学习结束时调用云函数
-	endStudy() {
-	  uniCloud.callFunction({
-	    name: 'endStudy',  // 云函数名
-	    data: { userId: this.userId },  // 传递用户ID
-	    success: (res) => {
-	      if (res.result.success) {
-	        // 处理学习结束后的逻辑，例如跳转到其他页面
-	        uni.navigateTo({
-	          url: '/pages/studyEnd/studyEnd'  // 跳转到学习结束页面
-	        });
-	      } else {
-	        uni.showToast({
-	          title: res.result.message,
-	          icon: 'none'
-	        });
-	      }
-	    },
-	    fail: (err) => {
-	      uni.showToast({
-	        title: '云函数调用失败',
-	        icon: 'none'
-	      });
-	      console.error('云函数调用失败:', err);
-	    }
-	  });
-	}
+
+    async fetchLeaderboard() {
+      const today = new Date().toISOString().split('T')[0]; // 获取今天的日期（yyyy-MM-dd 格式）
+      
+      try {
+        const res = await uniCloud.callFunction({
+          name: 'getStudyUsersForToday',
+          data: { today: today }
+        });
+
+        console.log('云函数返回的数据:', res); 
+
+        if (res && res.result && Array.isArray(res.result) && res.result.length > 0) {
+          this.leaderboard = res.result.map(item => ({
+            name: item.nickname,  
+            avatar: item.avatarUrl, 
+            timeSpent: item.totalStudyDuration, 
+          }));
+
+          this.updateLeaderboard();  // 确保数据加载后再更新排行榜
+        } else {
+          console.error('返回数据格式错误或没有数据:', res);
+          uni.showToast({
+            title: '未能获取排行榜数据，请稍后再试',
+            icon: 'none'
+          });
+        }
+      } catch (error) {
+        console.error('获取排行榜数据失败:', error); 
+        uni.showToast({
+          title: '获取排行榜数据失败，请检查网络或稍后再试',
+          icon: 'none'
+        });
+      }
+    },
+
+    updateLeaderboard() {
+      if (this.leaderboard.length > 0) {
+        // 排行榜按照学习时长排序
+        this.leaderboard.sort((a, b) => b.timeSpent - a.timeSpent);
+    
+        // 查找当前用户的排名
+        const userRank = this.leaderboard.findIndex(user => user.avatar === this.userAvatar);  // 使用 avatar 或 user_id 来定位当前用户
+    
+        // 更新当前排名
+        this.ranking = userRank !== -1 ? userRank + 1 : this.ranking;
+    
+        // 如果是第一名，更新昵称为第一名的昵称
+        if (this.ranking === 1) {
+          this.nickname = this.leaderboard[0].name;  // 获取排行榜第一名的昵称
+        }
+    
+        // 更新正在专注的人数
+        this.numberOfPeople = this.leaderboard.length;
+      }
+    },
 
 
+    // 学习结束
+    endStudy() {
+      const randomId = uni.getStorageSync('randomId');
+      const userId = uni.getStorageSync('user_id');
+    
+      if (!userId || !randomId) {
+        uni.showToast({ title: '缺少用户ID或记录ID', icon: 'none' });
+        return;
+      }
+    
+      uniCloud.callFunction({
+        name: 'endStudy',
+        data: { userId: userId, randomId: randomId },
+        success: (res) => {
+          if (res.result.success) {
+            uni.navigateTo({ url: '/pages/study_report/study_report' });
+          } else {
+            uni.showToast({ title: res.result.message, icon: 'none' });
+          }
+        },
+        fail: (err) => {
+          uni.showToast({ title: '云函数调用失败', icon: 'none' });
+        }
+      });
+    }
   },
   mounted() {
     this.startTimer();  // 页面加载时启动计时器
     this.fetchUserAvatar(); // 获取头像
-      this.$nextTick(() => {
-        console.log('头像更新完成', this.userAvatar);  // 在头像更新后打印
-      });
+    this.fetchLeaderboard();  // 获取当天的排行榜数据
   },
   beforeDestroy() {
     this.stopTimer();  // 组件销毁时清除计时器
+    this.timeSpentInSeconds = 0;  // 清空学习时长
+    this.formattedTime = '0h 0min';  // 重置时间显示
+  },
+  watch: {
+    // 监听页面离开，退出计时
+    '$route': function() {
+      if (this.studyInProgress) {
+        this.stopTimer(); // 页面切换时停止计时
+      }
+    }
   }
-}
+};
 </script>
+
+
 
 <style scoped>
 .study-room {
@@ -220,6 +277,7 @@ export default {
 .overlay h1 {
   font-size: 18px;
   margin-bottom: 5px;
+  color: #ffffff;
 }
 
 .stats {

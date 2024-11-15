@@ -159,7 +159,7 @@ export default {
 }
 
 .btn-task.completed {
-  background-color: #87d068;
+  background-color: #e57373;
   color: #fff;
 }
 

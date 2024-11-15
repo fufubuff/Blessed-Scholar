@@ -17,7 +17,7 @@
     <!-- 用户选择 AI 助手性格 -->
     <view class="assistant-selector">
       <text>选择 AI 助手性格：</text>
-      <picker mode="selector" :range="assistantOptions" @change="changeAssistant">
+      <picker mode="selector" :range="combinedAssistantOptions" @change="changeAssistant">
         <view class="picker">
           <text>{{ selectedAssistantLabel }}</text>
         </view>
@@ -71,15 +71,25 @@
     </view>
 
     <!-- 日期选择器查看聊天记录 -->
-    <view class="history-selector">
-      <text>查看历史聊天记录：</text>
-      <picker mode="date" @change="loadHistory">
-        <view class="picker">
-          <text>{{ selectedDate }}</text>
-        </view>
-      </picker>
-    </view>
+ <view class="control-row">
+  <!-- 日期选择器查看聊天记录 -->
+  <view class="history-selector">
+    <text>查看历史聊天记录：</text>
+    <picker mode="date" @change="loadHistory">
+      <view class="picker">
+        <text>{{ selectedDate }}</text>
+      </view>
+    </picker>
   </view>
+
+  <!-- 定制我的助手性格 -->
+  <view class="custom-assistant-selector">
+    <text>定制我的助手性格：</text>
+    <button @click="goToCustomizeAssistant">定制性格</button>
+  </view>
+</view>
+  
+   </view>
 </template>
 
 
@@ -94,6 +104,7 @@ export default {
         '逼你学习的霸道总裁',
         '看淡人生的睿智老者',
 		'技术人员黄小fu',
+		'我的定制AI性格',
       ],
       assistantClasses: [
         'assistant-sister',
@@ -101,6 +112,7 @@ export default {
         'assistant-huangxiaofu',
         'assistant-ceo',
         'assistant-wiseelder',
+		'assistant-custom',
       ],
       selectedAssistantIndex: 0,
       selectedAssistantLabel: '温柔知性的大姐姐',
@@ -135,8 +147,67 @@ export default {
     inputPlaceholder() {
       return `${this.assistantNickname} 正在等待您的问题...`;
     },
+	combinedAssistantLabel() {
+	    if (this.selectedAssistantLabel === '我的定制AI性格') {
+	      return this.aipersonality
+	        ? `${this.selectedAssistantLabel} (${this.aipersonality})`
+	        : '我的定制AI性格';
+	    }
+	    return this.selectedAssistantLabel;
+	},
+	  combinedAssistantOptions() {
+	    return this.assistantOptions;
+	  },
   },
   methods: {
+  async loadInitialState() {
+    // 异步加载数据...
+    const assistantIndex = await new Promise((resolve, reject) => {
+      uni.getStorage({
+        key: 'selectedAssistantIndex',
+        success: (res) => resolve(res.data),
+        fail: () => reject('未找到保存的助手性格选择')
+      });
+    });
+    const savedIndex = uni.getStorageSync('selectedAssistantIndex');
+    console.log('Loaded Assistant Index:', savedIndex); // 确认加载的值
+    if (savedIndex !== undefined) {
+      this.selectedAssistantIndex = assistantIndex;
+      this.selectedAssistantLabel = this.assistantOptions[assistantIndex];
+      this.selectedAssistantClass = this.assistantClasses[assistantIndex];
+    }
+
+    // 加载用户输入
+    const userInput = await new Promise((resolve, reject) => {
+      uni.getStorage({
+        key: 'userInput',
+        success: (res) => resolve(res.data),
+        fail: () => reject('未找到保存的用户输入')
+      });
+    });
+
+    if (userInput !== undefined) {
+      this.userInput = userInput;
+    }
+  },
+    saveAssistantSelection(index) {
+        this.selectedAssistantIndex = index;
+        // 同步保存
+        uni.setStorageSync('selectedAssistantIndex', index);
+      },
+
+      // 保存用户的输入
+      saveUserInput(input) {
+        this.userInput = input;
+        // 异步保存
+        uni.setStorage({
+          key: 'userInput',
+          data: input,
+          success: function () {
+            console.log('用户输入保存成功');
+          }
+        });
+      },
     // 保存昵称
     async saveNickname() {
       this.editingNickname = false;
@@ -144,13 +215,14 @@ export default {
       this.messages = [];
       await this.assistantIntroduce();
     },
-
     // 切换 AI 助手性格
     async changeAssistant(e) {
       this.selectedAssistantIndex = e.detail.value;
       this.selectedAssistantLabel = this.assistantOptions[this.selectedAssistantIndex];
       this.selectedAssistantClass = this.assistantClasses[this.selectedAssistantIndex];
       // 切换性格时清空当前聊天记录
+	  uni.setStorageSync('selectedAssistantIndex', this.selectedAssistantIndex);
+	  console.log('Saving Assistant Index:', this.selectedAssistantIndex);
       this.messages = [];
       // 让助手重新自我介绍
       await this.assistantIntroduce();
@@ -164,7 +236,12 @@ export default {
       this.messages = [];
       await this.assistantIntroduce();
     },
-
+     goToCustomizeAssistant() {
+        // 这里假设你已经有一个定制页面的路由设置
+        uni.navigateTo({
+          url: '/pages/customizeAI/customizeAI',
+        });
+      },
     // 发送消息
     async sendMessage() {
       if (this.userInput.trim() === '') return;
@@ -185,6 +262,9 @@ export default {
             helpType: this.selectedHelpLabel,
             userId: this.userId,
             assistantNickname: this.assistantNickname,
+			studySituation: this.studySituation,
+			weakness: this.weakness,
+			aipersonality: this.aipersonality,
           },
         });
 
@@ -215,7 +295,35 @@ export default {
       // 清空用户输入
       this.userInput = '';
     },
-
+    async loadCustomizationData() {
+      try {
+        const db = uniCloud.database();
+        const res = await db.collection('users').doc(this.userId).get();
+        if (res.result.data && res.result.data.length > 0) {
+          const userData = res.result.data[0];
+          if (userData.customizationData) {
+            const customizationData = userData.customizationData;
+            this.selectedAssistantIndex = customizationData.personalityIndex || 0;
+            this.selectedAssistantLabel = customizationData.personality || '温柔知性的大姐姐';
+            this.selectedAssistantClass = this.assistantClasses[this.selectedAssistantIndex];
+            this.studySituation = customizationData.studySituation || '';
+            this.weakness = customizationData.weakness || '';
+			this.aipersonality = customizationData.aipersonality || '';
+            // 更新本地存储
+            uni.setStorageSync('selectedAssistantIndex', this.selectedAssistantIndex);
+			uni.setStorageSync('aipersonality', this.aipersonality);
+            // 加载历史记录并让助手进行自我介绍
+            await this.loadHistory();
+            await this.assistantIntroduce();
+          }
+        }
+      } catch (err) {
+        console.error('加载定制数据失败：', err);
+        // 如果加载失败，仍然继续加载历史记录和助手介绍
+        await this.loadHistory();
+        await this.assistantIntroduce();
+      }
+    },
     // 生成助手角色描述
     getAssistantRoleDescription() {
       switch (this.selectedAssistantLabel) {
@@ -223,12 +331,14 @@ export default {
           return '温柔知性的大姐姐，耐心地回答用户的考研问题，提供情感支持和专业建议，模拟一个校园女神一样善解人意能提供各种情绪价值';
         case '温柔学长大哥哥':
           return '温柔学长大哥哥，耐心地回答用户的考研问题，提供情感支持和专业建议，模拟一个校园男神一样如沐春风，能提供情绪价值';
-        case '技术人员黄小fu(做软件工程很疲惫的性格）':
+        case '技术人员黄小fu':
           return '技术人员黄小fu，做软件工程很疲惫，对生活感到疲倦,对张栋老师很尊敬，建议考生去上张栋的软件工程解答疑惑，告诉考生做完软件工程实践这个世界上已经没有困难的事情了';
         case '逼你学习的霸道总裁':
           return '霸道总裁，霸道地逼着用户学习，语气比较强硬，必须让考生做完每天的作业，推动复习计划的完成。';
         case '看淡人生的睿智老者':
           return '看淡人生的睿智老者，给予深刻的人生见解，有种淡淡的遗世独立感觉，喜欢灌鸡汤。';
+		case '我的定制AI性格':
+		    return `我的定制AI性格，${this.aipersonality}`;
         default:
           return '耐心且专业的考研助手';
       }
@@ -241,12 +351,14 @@ export default {
           return '/static/assistant-sister.jpg';
         case '温柔学长大哥哥':
           return '/static/assistant-brother.jpg';
-        case '技术人员黄小fu(做软件工程很疲惫的性格）':
-          return '/static/huangxiaofu.jpg';
+        case '技术人员黄小fu':
+          return '/static/huangxiaofu1.jpg';
         case '逼你学习的霸道总裁':
           return '/static/assistant-ceo.jpg';
         case '看淡人生的睿智老者':
           return '/static/assistant-wiseelder.jpg';
+		case '我的定制AI性格':
+		  return '/static/huangxiaofu.jpg';
         default:
           return '/static/logo.jpg';
       }
@@ -291,7 +403,8 @@ export default {
             helpType: this.selectedHelpLabel,
             userId: this.userId,
             assistantNickname: this.assistantNickname,
-            isIntroduction: true, // 标记为自我介绍
+            isIntroduction: true,
+			aipersonality: this.aipersonality,// 标记为自我介绍
           },
         });
 
@@ -434,14 +547,9 @@ export default {
     },
   mounted() {
     // 调用 getUserId 方法获取用户ID
+	this.loadInitialState();
     this.getUserId();
   },
-  
-  // 在 aihelper 页面生命周期中隐藏 tabBar
-  onShow() {
-    uni.hideTabBar();
-  }
-  
 };
 </script>
 
@@ -499,7 +607,13 @@ export default {
   --chat-ai-bg: rgba(240, 255, 240, 0.8);
   --chat-background-image: url('/static/chat-bg-wiseelder.jpg');
 }
-
+.assistant-custom {
+  --primary-color: #e6ccff;
+  --secondary-color: #9933ff;
+  --background-color: #f0e6ff;
+  --chat-ai-bg: rgba(240, 240, 255, 0.8);
+  --chat-background-image: url('/static/chat-bg-custom.jpg'); /* 确保您有这个背景图片 */
+}
 
 /* 应用动态样式 */
 /* 应用动态样式 */ 
@@ -692,18 +806,7 @@ export default {
   top: -2px;  /* 将文字向上移动2px */
 }
 
-.history-selector {
-  padding: 10px;
-  background-color: var(--primary-color);
-  display: flex;
-  align-items: center;
-}
 
-.history-selector text {
-  margin-right: 10px;
-  font-size: 16px;
-  color: #333;
-}
 
 .picker {
   padding: 5px 10px;
@@ -715,4 +818,49 @@ export default {
   color: #333;
 }
 
+.control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--primary-color);
+}
+
+/* 子控件的样式保持一致，可以适当调整以确保它们看起来和谐 */
+.history-selector,
+.custom-assistant-selector {
+  flex: 1; /* 让每个子控件占用等量的空间 */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-right: 10px; /* 为左边的控件添加右边距，避免挤压 */
+}
+
+.history-selector:last-child,
+.custom-assistant-selector:last-child {
+  margin-right: 0; /* 最后一个元素不需要右边距 */
+}
+
+/* 文本样式 */
+.history-selector text,
+.custom-assistant-selector text {
+  font-size: 16px;
+  color: #333;
+  margin-right: 5px; /* 给文本和选择器或按钮之间添加一点空间 */
+}
+
+/* Picker 和按钮的样式调整 */
+.picker,
+.custom-assistant-selector button {
+  padding: 5px 10px;
+  background-color: var(--secondary-color);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+text {
+  font-weight: bold; /* 设置字体加粗 */
+}
 </style>

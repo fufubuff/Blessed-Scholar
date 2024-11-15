@@ -1,0 +1,358 @@
+<template>
+  <view class="container">
+    <!-- 输入框部分 -->
+    <view class="input-box">
+      <!-- 替换为文本区域，使其可编辑 -->
+      <textarea class="input-area" placeholder="请输入你的任务" v-model="taskText"></textarea>
+      <view class="tag-section">
+        <view class="tag" @click="setTaskText('背单词')">背单词+</view>
+        <view class="tag" @click="setTaskText('专业课')">专业课+</view>
+        <view class="tag" @click="setTaskText('高数')">高数+</view>
+        <view class="tag" @click="setTaskText('起床')">起床+</view>
+        <view class="tag" @click="setTaskText('做阅读')">做阅读+</view>
+        <view class="tag" @click="setTaskText('背政治')">背政治+</view>
+        <view class="tag" @click="setTaskText('十二点睡觉')">十二点睡觉+</view>
+      </view>
+
+      
+    </view>
+
+    <!-- 新增的白色圆角矩形，用于打卡时间和提醒时间 -->
+    <view class="time-box">
+      <picker mode="time" start="08:00" end="23:00" @change="onTimeRangeChange">
+        <view class="time-item">
+          <text class="time-label">打卡时间</text>
+          <text class="time-value">{{ checkInTime }}</text>
+        </view>
+      </picker>
+
+      <!-- 提醒时间选择 -->
+      <view class="time-item">
+        <text class="time-label">提醒时间</text>
+        <picker mode="time" start="08:00" end="23:00" @change="onReminderChange">
+          <view class="reminder-box">
+            <text class="reminder-time">{{ reminderTime }}</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="section">
+        <view class="time-label">重复</view>
+        <view class="time-values">
+          <view
+            class="time-slot"
+            v-for="(time, index) in times"
+            :key="index"
+            :class="{'selected': selectedTimes.includes(time)}"
+            @click="toggleTimeSelection(time)"
+          >
+            {{ time }}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注部分 -->
+    <view class="section">
+      <view class="textarea-container">
+        <textarea class="textarea" placeholder="请输入备注内容" v-model="notes"></textarea>
+      </view>
+      <button class="confirm-button" @click="addTask">确认添加</button>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      notes: '',  // 备注内容
+      taskText: '',  // 默认任务文本
+      checkInTime: '08:00',  // 打卡时间
+      reminderTime: '08:00',  // 提醒时间
+      times: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],  // 重复选择的日期
+      selectedTimes: []  // 被选择的重复日期
+    };
+  },
+  methods: {
+	
+    // 获取当前日期
+    getCurrentDate() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');  // 月份从0开始
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+    // 点击按钮时，更新任务文本区域的内容
+    setTaskText(text) {
+      this.taskText = text;
+    },
+    // 选择打卡时间范围
+    onTimeRangeChange(event) {
+      this.checkInTime = event.detail.value;  // 更新打卡时间
+    },
+    // 选择提醒时间
+    onReminderChange(event) {
+      this.reminderTime = event.detail.value;  // 更新提醒时间
+    },
+    // 切换重复日期选择
+    toggleTimeSelection(time) {
+      const index = this.selectedTimes.indexOf(time);
+      if (index === -1) {
+        this.selectedTimes.push(time);  // 添加选中的日期
+      } else {
+        this.selectedTimes.splice(index, 1);  // 取消选中的日期
+      }
+    },
+    // 添加任务
+    addTask() {
+      const userId = uni.getStorageSync('user_id');
+	  
+	  console.log('当前用户 ID:', userId);  // 打印获取到的 user_id
+  
+    
+      const taskData = {
+        name: this.taskText,  // 任务名称
+        clock_in_time: this.checkInTime,  // 打卡时间
+        reminder_time: this.reminderTime,  // 提醒时间
+        repeat_dates: this.selectedTimes,  // 重复日期
+        remarks: this.notes  // 备注内容
+      };
+    
+      // 调用云函数保存数据到数据库
+      uniCloud.callFunction({
+        name: 'addTask',  // 云函数名称（需要与你刚才写的云函数名称相匹配）
+        data: {
+          user_id: userId,  // 用户 ID
+          taskData: taskData  // 任务数据
+        },
+        success: (res) => {
+          console.log('任务添加成功:', res);
+          uni.showToast({
+            title: '添加成功',
+            icon: 'success',
+            duration: 2000
+          });
+        },
+        fail: (err) => {
+          console.error('任务添加失败:', err);
+          uni.showToast({
+            title: '添加失败',
+            icon: 'none',
+            duration: 2000
+          });
+        }
+      });
+    }
+
+  }
+};
+</script>
+
+
+
+<style scoped>
+.page {
+  min-height: 100vh;
+  background-color: #e5e5e5;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.input-box {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  align-self: center;
+  width: 93%;
+  height: 170px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-area {
+  width: 100%;
+  height: 16%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 16px;
+  color: #c1c1c1;
+  background-color: transparent;
+}
+
+.tag-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  padding-top: 20px;
+  margin-top: 0px;
+}
+
+.tag {
+  background-color: white;
+  border: 0.1px solid #f0b7b5;
+  color: #c1c1c1;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 15px;
+  margin: 0px 10px 12px 0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.tag:hover {
+  background-color: #e0e0e0;
+}
+
+.more-tasks {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: #BD3124;
+  cursor: pointer;
+  margin-top: 25px;
+}
+
+.arrow-icon {
+  margin-left: 5px;
+  font-size: 12px;
+}
+
+/* 新增的时间选择框样式 */
+.time-box {
+  background-color: white;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  align-self: center;
+  width: 96%;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.time-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.time-label {
+  font-size: 16px;
+  color: black;
+}
+
+.reminder-box {
+  width: 60px;
+  height: 60px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.reminder-time {
+  font-size: 14px;
+  color: #666;
+}
+
+.picker-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.time-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.time-slot {
+  background-color: #f0b7b5;
+  margin-top: 20px;
+  color: white;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.time-slot:hover {
+  background-color: #f0b7b5;
+}
+
+.time-slot.selected {
+  background-color: #BD3124;  /* 选中的按钮颜色 */
+}
+
+.textarea {
+  width: 100%;
+  height: 100px;
+  border-radius: 8px;
+  font-size: 16px;
+  padding: 10px;
+}
+
+/* 新增的备注输入框样式 */
+.textarea-container {
+  background-color: white;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  margin-left: -8px;
+  align-self: center;
+  width: 95%;
+  resize: both; /* 允许调整大小 */
+  overflow: auto; /* 隐藏溢出内容 */
+  border: 1px solid transparent; /* 添加边框以便更好地显示 */
+}
+
+/* 确认添加按钮样式 */
+.confirm-button {
+  background-color: #BD3124;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 35px;
+  cursor: pointer;
+  align-self: center;
+  font-weight: 100;
+  width: 60%;
+  height: 60px;
+  transition: background-color 0.3s;
+  margin-top: 20px; /* 增加按钮的上边距 */
+}
+
+.confirm-button:hover {
+  background-color: #BD3124;
+}
+</style>

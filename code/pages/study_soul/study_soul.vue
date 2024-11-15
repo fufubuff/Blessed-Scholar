@@ -103,7 +103,7 @@
 	</div>
 
 	
-	<!-- 我的任务模块 -->
+	<!-- 我的任务模块 --> 
 	<div class="my-tasks">
 	  <div class="tasks-top">
 	    <div class="tasks-header">
@@ -111,14 +111,20 @@
 	      <span>我的任务</span>
 	    </div>
 	    <div class="tasks-link">
-	      <a href="#" class="task-link" @click="goToTaskPage">+添加</a> <!-- 文字链接代替图标 -->
+	      <view href="#" class="task-link" @click="goToTaskPage()">添加</view> <!-- 文字链接代替图标 -->
 	    </div>
 	  </div>
 	  <hr class="divider"/>
 	  <div class="tasks-content">
-	    <p>这里显示任务详情...</p> <!-- 示例内容，可根据需要调整 -->
+	    <div v-for="(task, index) in tasks" :key="index" class="task-item">
+	      <div :class="{'task-completed': task.completed}" @click="toggleTaskCompletion(index)">
+	        <span class="task-name">{{ task.name }}</span>
+	        <p class="task-remarks">{{ task.remarks }}</p>
+	      </div>
+	    </div>
 	  </div>
 	</div>
+
 
 
   </div>
@@ -145,8 +151,8 @@ export default {
 	  
 	  analysisContent: "今日的学情分析还没更新哦！", // 默认的学情分析内容
 	  
-	  roomFirstTitle: "你今天还没进入自习室", // 初始大字
-	  roomSubtitle: "不要让自己的梦想只是梦想...", // 初始小字
+	  roomFirstTitle: "你今天还没进入自习室学习哦", // 初始大字
+	  roomSubtitle: "不要让自己的梦想偷偷溜走...", // 初始小字
 	  iconSrc: '/static/attention.png', // 初始图标
 
 	  
@@ -166,6 +172,8 @@ export default {
     this.updateCalendar();
     setInterval(this.calculateCountdown, 1000);
 	this.fetchStudyAnalysis();  // 获取并更新学情分析内容
+	this.getTodayDate();  // 获取当前日期
+	this.fetchTasksForToday();  // 获取今天的任务
   },
   methods: {
     updateCalendar() {
@@ -306,13 +314,14 @@ startStudy() {
     return;  // 不再继续执行云函数
   }
 
+  // 确认是否能正确获取 userId
   console.log('准备调用云函数，传递的用户ID:', userId);
 
-  // 调用云函数
+  // 调用云函数，不需要传递 randomId，云函数会生成它
   uniCloud.callFunction({
     name: 'startStudyRoom',  // 云函数名称
     data: {
-      userId: userId  // 传递用户ID
+      userId: userId  // 只传递 userId
     },
     success: (res) => {
       console.log('云函数调用成功，返回结果:', res);
@@ -321,10 +330,14 @@ startStudy() {
         console.log('自习室已开启');
         console.log('返回的自习信息:', res.result.data);  // 返回的自习信息
 
-        // 获取返回的时间戳和日期
-        const { startTime, startDate } = res.result.data;
+        // 获取返回的时间戳、日期和 randomId
+        const { startTime, startDate, randomId } = res.result.data;
         console.log('今天日期:', startDate);
-		console.log('现在时间戳:', startTime);
+        console.log('现在时间戳:', startTime);
+        console.log('生成的随机ID:', randomId);
+
+        // 将 randomId 存储到本地存储
+        uni.setStorageSync('randomId', randomId);  // 存储 randomId
 
         // 在成功回调中跳转到自习室页面
         uni.navigateTo({
@@ -340,22 +353,90 @@ startStudy() {
   });
 },
 
+toggleRoomContent() {
+  const today = new Date().toISOString().split('T')[0]; // 获取今天的日期，格式如：2024-11-14
+  const lastStudyDate = uni.getStorageSync('lastStudyDate'); // 获取上次自习日期
 
-
-
-	  toggleRoomContent() {
-	    if (this.roomFirstTitle === "你今天还没进入自习室") {
-	      this.roomFirstTitle = "今日学习报告";
-	      this.roomSubtitle = "查看你的学习进度";
-	      this.iconSrc = '/static/okstudy.png'; // 改变后的图标
-	    } else {
-	      this.roomFirstTitle = "你今天还没进入自习室";
-	      this.roomSubtitle = "不要让自己的梦想只是梦想...";
-	      this.iconSrc = '/static/attention.png'; // 初始图标
-	    }
-	  },
-	
+  // 如果今天的日期与最后记录的日期不一致，说明是新的一天
+  if (!lastStudyDate || lastStudyDate !== today) {
+    this.roomFirstTitle = "你今天还没进入自习室学习哦！";
+    this.roomSubtitle = "不要让自己的梦想偷偷溜走...";
+    this.iconSrc = '/static/attention.png'; // 初始图标
+  } else {
+    // 如果当天已经进入过自习室，状态保持不变
+    this.roomFirstTitle = "今日已沉浸式学习";
+    this.roomSubtitle = "点击可以继续进入自习室学习哦！";
+    this.iconSrc = '/static/okstudy.png'; // 改变后的图标
   }
+
+  // 如果点击后还未记录今天的学习，更新状态并记录今天的日期
+  if (!lastStudyDate || lastStudyDate !== today) {
+    uni.setStorageSync('lastStudyDate', today); // 记录今天日期
+  }
+},
+
+// 加载今天的任务
+    async loadTasksForToday() {
+      const currentDate = new Date().toISOString().split('T')[0];  // 获取当前日期（yyyy-mm-dd）
+
+      try {
+        // 假设通过uniCloud获取数据
+        const res = await uniCloud.callFunction({
+          name: 'getTasksForToday',  // 云函数名
+          data: {
+            user_id: this.userId,
+            date: currentDate  // 过滤出今天的任务
+          }
+        });
+
+        if (res.result && res.result.tasks) {
+          this.tasks = res.result.tasks;
+        } else {
+          this.tasks = [];
+        }
+      } catch (error) {
+        console.error('加载任务失败:', error);
+      }
+    },
+
+    // 切换任务完成状态
+    toggleTaskCompletion(index) {
+      const task = this.tasks[index];
+      task.completed = !task.completed;
+
+      // 更新任务状态
+      this.updateTaskCompletion(task);
+    },
+
+    // 更新任务完成状态到数据库
+    async updateTaskCompletion(task) {
+      try {
+        await uniCloud.callFunction({
+          name: 'updateTaskCompletion',
+          data: {
+            taskId: task._id,  // 任务ID
+            completed: task.completed  // 任务完成状态
+          }
+        });
+      } catch (error) {
+        console.error('更新任务状态失败:', error);
+      }
+    },
+    goToTaskPage() {
+      console.log("尝试跳转到添加任务页面");
+      uni.navigateTo({
+        url: '/pages/addTasks/addTasks',
+        success: () => {
+          console.log("成功跳转到添加任务页面");
+        },
+        fail: (err) => {
+          console.log("跳转失败:", err);
+        }
+      });
+    },
+    
+
+}
 };
 </script>
 
@@ -817,5 +898,61 @@ startStudy() {
   text-align: center;
   width: 100%;
 }
+
+<style scoped>
+/* 样式部分 */
+.my-tasks {
+  padding: 20px;
+}
+
+.tasks-header {
+  display: flex;
+  align-items: center;
+}
+
+.task-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.tasks-content {
+  margin-top: 20px;
+}
+
+.task-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.task-name {
+  font-weight: bold;
+}
+
+.task-remarks {
+  color: #666;
+}
+
+.task-completed .task-name,
+.task-completed .task-remarks {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: #ccc;
+  margin: 20px 0;
+}
+
+.task-link {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+
 
 </style>
