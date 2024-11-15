@@ -1,5 +1,10 @@
 <template>
   <div class="about-page">
+    <!-- 顶部导航栏 -->
+    <div class="top-nav">
+      
+      <h1 class="title">关于我们</h1>
+    </div>
 
     <!-- 中间的图标和信息 -->
     <div class="about-info">
@@ -51,6 +56,31 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 0 20px;
+}
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 15px 0;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #ffffff;
+}
+
+.back-button {
+  position: absolute;
+  left: 0;
+  padding: 0 15px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.title {
+  text-align: center;
+  flex: 1;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
 }
 
 .about-info {

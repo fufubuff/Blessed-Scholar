@@ -1,5 +1,9 @@
 <template>
   <div class="settings-page">
+    <!-- 顶部导航栏 -->
+    <div class="top-nav">
+      <h1 class="title">编辑资料</h1>
+    </div>
 
     <!-- 通知设置列表 -->
     <ul class="settings-list">
@@ -128,6 +132,16 @@ export default {
   font-family: Arial, sans-serif;
 }
 
+.top-nav {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 18px;
+  margin: 0;
+}
 
 .settings-list {
   list-style: none;
@@ -139,7 +153,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 15px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -187,9 +201,9 @@ export default {
 }
 
 .day-button.active {
-  background-color: #bd402f;
+  background-color: #b50c5b;
   color: #ffffff;
-  border-color: #bd402f;
+  border-color: #b50c5b;
 }
 
 .time-input {
@@ -200,7 +214,7 @@ export default {
 .save-button {
   margin-top: 20px;
   padding: 10px 20px;
-  background-color: #bd402f;
+  background-color: #b50c5b;
   color: #ffffff;
   border: none;
   border-radius: 5px;

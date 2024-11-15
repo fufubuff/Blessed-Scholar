@@ -72,40 +72,38 @@ export default {
   methods: {
     async fetchUserInfo() {
       try {
-        const userId = uni.getStorageSync('user_id');
-        if (!userId) {
-          // 如果没有 user_id，跳转到登录页面
-          uni.navigateTo({
-            url: '/pages/login/login' // 根据你的登录页面路径调整
-          });
+        const account = uni.getStorageSync('account');
+        if (!account) {
+          uni.navigateTo({ url: '/pages/login/login' });
           return;
         }
 
-        // 调用云函数 getUserInfo 获取用户信息
         const res = await uniCloud.callFunction({
           name: 'getUserInfo',
-          data: { user_id: userId }
+          data: { account }
         });
-		
-		console.log('云函数返回的数据:', res); // 打印返回的数据
-		
 
-        if (res.success) {
+        if (res.result.success) {
           this.user = res.result.data;
-		  console.log('User data updated:', this.user);  // 打印用户数据，确认数据是否更新
-          
+          // 更新本地存储
+          uni.setStorageSync('userInfo', this.user);
         } else {
+          const storedUserInfo = uni.getStorageSync('userInfo');
+          if (storedUserInfo) {
+            this.user = storedUserInfo;
+          }
           uni.showToast({ title: res.result.message, icon: 'none' });
         }
       } catch (error) {
         uni.showToast({ title: '获取用户信息失败', icon: 'none' });
-		console.error(error); // 打印错误信息
       }
     },
 
     navigateToNicknameEdit() {
       console.log('Navigating to nickname edit page');
       uni.navigateTo({ url: '/pages/bianjinicheng/bianjinicheng' });
+      // 这里可以直接更新用户信息
+      this.fetchUserInfo(); // 确保在页面返回时获取最新信息
     },
 
     navigateToYearEdit() {
@@ -118,54 +116,48 @@ export default {
 
     async saveUserInfo() {
         try {
-          const userId = uni.getStorageSync('user_id') // 获取用户唯一标识符
-          if (!userId) {
+          const account = uni.getStorageSync('account'); // 获取用户唯一标识符
+          if (!account) {
             uni.showToast({ title: '用户未登录', icon: 'none' });
             return;
           }
     
-          // 准备要更新的数据
-                const updatedData = {
-                  userId, 
-                  avatarUrl: this.user.avatarUrl,
-                  nickname: this.user.nickname,
-                  gender: this.user.gender,
-                  birthday: this.user.birthday,
-                  school: this.user.school,
-                  major: this.user.major,
-                  year: this.user.year,
-                  signature: this.user.signature
-                };
-
+          const payload = { account, ...this.user }; // 将 account 与用户信息合并
     
           const res = await uniCloud.callFunction({
             name: 'updateUserInfo',
-            data: updatedData  // 传递更新的数据
+            data: payload
           });
     
-          if (res.success) {
+          if (res.result.success) {
             uni.showToast({ title: '保存成功', icon: 'success' });
-			
-			// 保存成功后，返回上一页面
-			uni.navigateBack();  // 这行代码将跳转回设置页面
+            uni.setStorageSync('userInfo', this.user);
           } else {
-            uni.showToast({ title: res.msg, icon: 'none' });
+            uni.showToast({ title: res.result.message, icon: 'none' });
           }
         } catch (error) {
           uni.showToast({ title: '保存失败', icon: 'none' });
-		  console.error(error); // 打印错误信息
         }
       },
 
     updateNickname(newNickname) {
       this.user.nickname = newNickname; // 更新用户的昵称
+      uni.setStorageSync('userInfo', this.user); // 更新本地存储
     }
   },
   
   mounted() {
     this.fetchUserInfo(); // 获取用户信息
-	
-    }
+	this.$on('yearUpdated', (newYear) => {
+	    this.user.year = newYear; // 更新用户的年份
+	    uni.setStorageSync('userInfo', this.user); // 更新本地存储
+	});
+    uni.$on('nicknameUpdated', (newNickname) => {
+        this.user.nickname = newNickname; // 更新用户的昵称
+        uni.setStorageSync('userInfo', this.user); // 更新本地存储
+        console.log('Nickname updated:', newNickname); // 调试信息
+      });
+  }
 
 }
 </script>

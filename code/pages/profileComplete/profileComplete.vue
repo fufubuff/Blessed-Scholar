@@ -82,45 +82,26 @@ export default {
       }
     },
     async completeProfile() {
-        try {
-          // 从本地存储中获取 account 字段
-          const account = uni.getStorageSync('account');
-    
-          if (!account) {
-            return uni.showToast({ title: '账号不能为空', icon: 'none' });
-          }
-    
-          // 获取表单数据
-          const { avatarUrl, nickname, year, major, school } = this.form;
-    
-          // 调用云函数完成资料更新
-          const { result } = await uniCloud.callFunction({
-            name: 'completeProfile',
-            data: {
-              account, // 传递账号
-              avatarUrl,
-              nickname,
-              year,
-              major,
-              school
-            }
-          });
-    
-          if (result.success) {
-            uni.showToast({ title: '资料完善成功', icon: 'success' });
-            setTimeout(() => {
-              uni.navigateTo({ url: '/pages/login/login' });
-            }, 1500);
-          } else {
-            throw new Error(result.message);
-          }
-        } catch (error) {
-          uni.showToast({
-            title: error.message || '提交失败，请稍后再试',
-            icon: 'none'
-          });
+      try {
+        const { result } = await uniCloud.callFunction({
+          name: 'completeProfile',
+          data: this.form
+        });
+        if (result.success) {
+          uni.showToast({ title: '资料完善成功', icon: 'success' });
+          setTimeout(() => {
+            uni.navigateTo({ url: '/pages/home/home' });
+          }, 1500);
+        } else {
+          throw new Error(result.message);
         }
+      } catch (error) {
+        uni.showToast({
+          title: error.message || '提交失败，请稍后再试',
+          icon: 'none'
+        });
       }
+    }
   }
 };
 </script>

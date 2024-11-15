@@ -58,8 +58,10 @@ padding: 10px;
 }
 
 .bill-item {
+margin-bottom: 10px;
 padding: 10px;
-border-bottom: 1px solid #eaeaea;
+border: 1px solid #ccc;
+border-radius: 5px;
 }
 
 .description {
@@ -67,16 +69,16 @@ display: flex;
 justify-content: space-between;
 }
 
-.amount{
-	font-weight: 550;
+.amount {
+font-weight: bold;
 }
 
 .amount.positive {
-color: #bd402f;
+color: green;
 }
 
 .amount.negative {
-color: #999;
+color: red;
 }
 
 .date {

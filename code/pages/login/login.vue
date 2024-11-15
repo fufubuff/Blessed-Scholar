@@ -44,8 +44,8 @@ export default {
 			  console.log("Stored user_id:", uni.getStorageSync('user_id')); // 输出 user_id
               
               uni.showToast({ title: '登录成功', icon: 'success' });
-			  //uni.navigateTo({ url: '/pages/zhuyehuodong/zhuyehuodong' });//自己测试
-              uni.switchTab({ url: '/pages/zhuyehuodong/zhuyehuodong' });
+			  uni.navigateTo({ url: '/pages/zhuyehuodong/zhuyehuodong' });//自己测试
+              //uni.switchTab({ url: '/pages/home/home' });
             } else {
               uni.showToast({ title: res.result.message || '登录失败', icon: 'none' });
             }

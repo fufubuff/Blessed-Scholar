@@ -1,5 +1,10 @@
 <template>
   <div class="settings-page">
+    <!-- 顶部导航栏 -->
+    <div class="top-nav">
+      <!-- 保持标题居中 -->
+      <h1 class="title">设置</h1>
+    </div>
 
     <!-- 设置选项列表 -->
     <ul class="settings-list">
@@ -142,7 +147,7 @@ export default {
   width: 100%;
   border-radius: 30px; /* 更圆润的边角 */
   font-size: 16px;
-  margin-bottom: 70px;
+  margin-top: 20px;
   cursor: pointer;
 }
 

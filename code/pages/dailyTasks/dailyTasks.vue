@@ -85,11 +85,6 @@ export default {
 	          uni.showToast({ title: newStatus ? '任务已完成' : '任务未完成', icon: 'success' });
 	          // 更新前端任务状态
 	          task.completed = newStatus;
-			  
-			  // 根据任务的奖励更新福币数量，并记录交易
-			                      const rewardAmount = task.reward;
-			                      const description = newStatus ? `${task.name}` : `${task.name}`;
-			                      await this.recordTransaction(userId, description, rewardAmount, newStatus);
 	        } else {
 	          uni.showToast({ title: response.result.msg || '更新失败', icon: 'none' });
 	        }
@@ -97,31 +92,7 @@ export default {
 	        console.error('Error updating task status:', error);
 	        uni.showToast({ title: '更新任务状态失败', icon: 'none' });
 	      }
-	    },
-		async recordTransaction(userId, description, amount, completed) {
-		            try {
-		                const date = new Date().toISOString().split('T')[0]; // 格式化日期为 'YYYY-MM-DD'
-		
-		                // 调用云函数将交易记录插入数据库
-		                const response = await uniCloud.callFunction({
-		                    name: 'addTransactionRecord',
-		                    data: {
-		                        user_id: userId,
-		                        description: description,
-		                        amount: completed ? amount : -amount, // 完成任务增加福币，未完成则扣除
-		                        date: date
-		                    }
-		                });
-		
-		                if (response.result && response.result.code === 0) {
-		                    console.log("交易记录添加成功");
-		                } else {
-		                    console.error('添加交易记录失败:', response.result.msg);
-		                }
-		            } catch (error) {
-		                console.error('Error recording transaction:', error);
-		            }
-		        }	
+	    }
   }
 };
 </script>

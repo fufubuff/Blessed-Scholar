@@ -4,6 +4,7 @@
     <view class="header">
       <image class="background-image" src="/static/background.png"></image>
       <image class="overlay-image" src="/static/background1.png"></image>
+      <text class="title">个人主页</text>
 	   <image
 	          class="settings-icon"
 	          src="/static/shezhi.jpg"
@@ -18,13 +19,13 @@
       </view>
       <view class="profile-info">
         <text class="username" @click="navigateTo('bianjiziliao')">{{ username }}</text>
-        <text class="intro" @click="navigateTo('bianjiziliao')">{{ signature }}</text>
-        <text class="following" @click="navigateTo('guanzhu')">你正在关注 <text class="red-text">{{ following }}</text></text>
-        <text class="stats" @click="navigateTo('fensi')">有人在意你 <text class="red-text">{{ followers }}</text></text>
-        <text class="fubi" @click="navigateToMyFub">福币 <text class="red-text">{{ fub }}</text></text>
+        <text class="intro" @click="navigateTo('bianjiziliao')">这是我的自我介绍。</text>
+        <text class="following" @click="navigateTo('guanzhu')">你正在关注</text>
+        <text class="stats" @click="navigateTo('fensi')">有人在意你</text>
+        <text class="fubi" @click="navigateToMyFub">福币</text>
         <view class="ranking-container" @click="navigateToLeaderboard">
-			<image class="fubipaihangbang" src="/static/排行榜.png"></image>
-		</view>
+      <image class="fubipaihangbang" src="/static/排行榜.png"></image>
+    </view>
 	  </view>
     </view>
 
@@ -123,7 +124,28 @@
 	              <view class="status-label">{{ activity.status }}</view>
 	            </view>
 	          </view>
-    
+    <!-- 底部导航栏 -->
+    <view class="bottom-nav">
+      <view class="nav-item" @click="navigateTo('读书魂')">
+        <image src="/static/读书魂.png" class="nav-icon"></image>
+        <text class="nav-text">读书魂</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('小研帮')">
+        <image src="/static/小研帮.png" class="nav-icon"></image>
+        <text class="nav-text">小研帮</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('aihelper')">
+        <image src="/static/研小fu.png" class="nav-icon"></image>
+      </view>
+      <view class="nav-item" @click="navigateTo('attention')">
+        <image src="/static/小研圈.png" class="nav-icon"></image>
+        <text class="nav-text">小研圈</text>
+      </view>
+      <view class="nav-item" @click="navigateTo('index')">
+        <image src="/static/上岸人.png" class="nav-icon"></image>
+        <text class="nav-text">上岸人</text>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -131,13 +153,6 @@
 export default {
   data() {
     return {
-		username: '', // 用户昵称
-		avatarUrl: '', // 用户头像URL
-		signature: '', // 用户个性签名
-		following: 0, // 关注人数
-		followers: 0, // 粉丝人数
-		fub: 0, // 福币数
-		
 	  activeButton: '收藏', // 默认选中“收藏”
 	        // 新增活动列表数据
 	        activities: [
@@ -151,7 +166,8 @@ export default {
 	            initiator: '小研',
 	            status: '已结束',
 	          },],
-			  
+      username: '加载中...', 
+      avatarUrl: '/static/default-avatar.png',
       activeButton: '收藏', // 默认选中“收藏”
       activeSubTab: '题库', // 默认选中“题库”子选项卡
       collectionItems: [
@@ -178,7 +194,7 @@ export default {
 
 
   mounted() {
-    this.fetchUserInfo();
+    this.fetchData();
   },
    
    
@@ -191,53 +207,33 @@ export default {
 	  activateSubTab(subTab) {
 	      this.activeSubTab = subTab;
 	    },
-    async fetchUserInfo() {
-          try {
-            const userId = uni.getStorageSync('user_id'); // 从本地存储获取 user_id
-            console.log('获取的user_id:', userId);
-			if (!userId) {
-              // 如果没有 user_id，跳转到登录页面
-              uni.navigateTo({
-                url: '/pages/login/login' // 根据你的登录页面路径调整
-              });
-              return;
-            }
-    
-            // 调用云函数 getUserInfo 获取用户信息
-            const response = await uniCloud.callFunction({
-              name: 'getUserInfo',
-              data: { user_id: userId }
-            });
-    
-            if (response.result) {
-              const userInfo = response.result.data;
-              console.log('用户信息:', userInfo);
-              this.username = userInfo.nickname;
-              this.avatarUrl = userInfo.avatarUrl;
-              this.signature = userInfo.signature;
-              this.following = userInfo.following; // 关注人数
-              this.followers = userInfo.followers; // 粉丝人数
-              
-              // 调用云函数获取福币信息
-              const fubResponse = await uniCloud.callFunction({
-                name: 'getUserFubInfo',
-                data: { user_id: userId }
-              });
-    
-              if (fubResponse.result.code === 0) {
-                const fubInfo = fubResponse.result.data;
-                this.fub = fubInfo.fub; // 福币数
-              } else {
-                console.error('获取福币信息失败:', fubResponse.result.msg);
-              }
-    
-            } else {
-              console.error(response.result ? response.result.msg : '获取用户信息失败');
-            }
-          } catch (error) {
-            console.error('获取用户信息失败', error);
-          }
-        },
+    async fetchData() {
+      try {
+        // 从本地存储中获取 account 信息
+        const account = uni.getStorageSync('account');
+        if (!account) {
+          // 如果没有 account 信息，则跳转到登录页面
+          uni.navigateTo({
+            url: '/pages/login/login'
+          });
+          return;
+        }
+
+        // 调用云函数 getUserInfo 并传递 account 信息
+        const res = await uniCloud.callFunction({
+          name: 'getUserInfo',
+          data: { account: account }
+        });
+        if (res.result.success) {
+          this.username = res.result.data.username;
+          this.avatarUrl = res.result.data.avatarUrl;
+        } else {
+          console.error(res.result.message);
+        }
+      } catch (error) {
+        console.error('获取用户信息失败', error);
+      }
+    },
    navigateTo(page) {
        // 定义页面映射
        const pageMap = {
@@ -342,12 +338,22 @@ body, html {
   z-index: 0;
 }
 
+.title {
+  position: absolute;
+  bottom: 160px; /* Position title at the bottom of the header */
+  width: 100%;
+  left: 0;
+  font-size: 16px;
+  z-index: 9;
+  font-weight: bold; /* Add this line to make the text bold */
+}
+
 .profile {
   display: flex;
   width: 80%;  /* 控制宽度为父容器宽度的90%，留出两侧空白以形成间隙 */
   height: 90px; /* 设置新的高度 */
   align-items: center;
-  margin-top: 120px; /* 上移，部分覆盖头部容器 */
+  margin-top: 80px; /* 上移，部分覆盖头部容器 */
   margin-bottom: 20px; /* 下边距 */
   margin-left: 5%; /* 左边距 */
   margin-right: 5%; /* 右边距，确保左右间距相等，也可调整为具体px值 */
@@ -387,7 +393,6 @@ body, html {
 
 .username {
   font-size: 18px;
-  font-weight: bold;
   color: #333;
   position: absolute; /* 或者使用 absolute，根据你的布局需求 */
   left: 30px; /* 向左移动 10px */
@@ -443,18 +448,11 @@ body, html {
   z-index: 12;
 }
 
-/* 红色数字样式 */
-.red-text {
-  font-size: 14px;
-  color: #bd402f; /* 设置字体颜色为红色 */
-  font-weight: bold;
-}
-
 .content {
   width: 100%;
   display: flex;
   flex-direction: column; /* 垂直排列子元素 */
-  margin-top: 150px;
+  margin-top: 120px;
   margin-left: -20px; /* 负值使元素向左移动，调整数值达到理想位置 */
 }
 
@@ -490,21 +488,20 @@ body, html {
   margin-top: 0px; /* Adjust this to move the container up or down */
   border-radius: 0px; /* Adjust border-radius for rounded corners */
   box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional shadow for depth */
-  bottom: 320px;
+  bottom: 360px;
 }
 
 .tab-button {
   background-color: transparent !important; /* 确保背景透明 */
   border: none !important; /* 确保没有边框 */
   color: grey; /* 默认颜色为灰色 */
-  padding: 10px 5px;
-  font-size: 15px;
-  font-weight: bold;
+  padding: 10px 15px;
+  font-size: 13.5px;
   outline: none;
 }
 
 .tab-button.active {
-  color: #bd402f !important; /* 点击后文本颜色变为红色 */
+  color: red !important; /* 点击后文本颜色变为红色 */
 }
 
 .button-container button::before,
@@ -513,7 +510,60 @@ body, html {
   background: none !important;
 }
 
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 60px; /* 导航栏高度 */
+  background-color: #FFFFFF; /* 导航栏背景颜色 */
+  border-top: 1px solid white; /* 导航栏上方的黑色水平线 */
+  position: fixed; /* 固定在底部 */
+  bottom: 0;
+  width: 100%;
+}
 
+/* 导航项样式 */
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 导航图标样式 */
+.nav-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* 导航文本样式 */
+.nav-text {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #000000;
+}
+
+/* 修改第三个导航项的样式为圆角矩形填充为暗红色 */
+.nav-item:nth-child(3) {
+  width: 70px; /* 圆角矩形的宽度 */
+  height: 40px; /* 圆角矩形的高度 */
+  background-color: #bd3124; /* 填充颜色为暗红色 */
+  border-radius: 15px; /* 圆角半径为20px */
+  justify-content: center; /* 垂直居中 */
+  align-items: center; /* 水平居中 */
+}
+
+/* 第三个导航项中的加号样式 */
+.nav-item:nth-child(3)::before {
+  content: '+'; /* 加号字符 */
+  color: white; /* 加号颜色为白色 */
+  font-size: 24px; /* 加号大小 */
+  font-weight: bold; /* 加号加粗 */
+}
+
+/* 移除第三个导航项的图片 */
+.nav-item:nth-child(3) .nav-icon {
+  display: none;
+}
 .check-in-section {
   display: flex;
   flex-direction: column;
@@ -778,8 +828,8 @@ body, html {
   width: 30px;
   height: 30px;
   position: absolute;
-  top: 20px;
-  right: 10px;
+  top: 50px;
+  right: 3px;
   z-index: 10;
 }
 /* 根据活动状态改变左侧竖线的颜色 */
