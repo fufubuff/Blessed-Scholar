@@ -51,7 +51,7 @@
 export default {
   data() {
     return {
-      imageSrc: '/static/bghxy.jpg',
+	  imageSrc: '/static/bghxy.jpg',
       userAvatar: '', // 初始的默认头像
       nickname: '',
       numberOfPeople: 0, // 初始值待动态设置
@@ -117,7 +117,7 @@ export default {
         try {
           const res = await uniCloud.callFunction({
             name: 'getUserInfo',
-            data: { userId: userId }
+            data: { user_id: userId }
           });
     
           if (res.result && res.result.data && res.result.data.avatarUrl) {
@@ -170,12 +170,14 @@ export default {
     },
 
     updateLeaderboard() {
+	  const userId = uni.getStorageSync('user_id');
       if (this.leaderboard.length > 0) {
         // 排行榜按照学习时长排序
         this.leaderboard.sort((a, b) => b.timeSpent - a.timeSpent);
     
         // 查找当前用户的排名
-        const userRank = this.leaderboard.findIndex(user => user.avatar === this.userAvatar);  // 使用 avatar 或 user_id 来定位当前用户
+        const userRank = this.leaderboard.findIndex(user => user.userId === this.userId);  // 使用 user_id 来定位当前用户
+
     
         // 更新当前排名
         this.ranking = userRank !== -1 ? userRank + 1 : this.ranking;

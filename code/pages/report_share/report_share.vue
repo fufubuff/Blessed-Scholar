@@ -58,11 +58,6 @@ export default {
       const file = event.target.files[0];  // 获取选中的文件
       if (file) {
         try {
-          const filePath = file.path || file.webkitRelativePath || file.name;  // 获取文件路径
-          if (!filePath) {
-            throw new Error('未获取到文件路径');
-          }
-          
           const cloudPath = `study_images/${Date.now()}-${file.name}`;  // 创建云端文件路径
 
           // 上传文件到云存储
@@ -146,6 +141,11 @@ export default {
   font-weight: bold;
 }
 
+.button-text {
+	color: #BD3124;
+	font-weight: bold;
+}
+
 .title-input {
   margin-bottom: 10px;
 }
@@ -168,6 +168,7 @@ export default {
   height: 1px;
   background-color: #ccc;
   margin: 20px 0;
+  margin-top: 0%;
 }
 
 .content-input {

@@ -111,21 +111,20 @@
 	      <span>我的任务</span>
 	    </div>
 	    <div class="tasks-link">
-	      <view href="#" class="task-link" @click="goToTaskPage()">添加</view> <!-- 文字链接代替图标 -->
+	      <view href="#" class="task-link" @click="goToTaskPage()">添加</view>
 	    </div>
 	  </div>
 	  <hr class="divider"/>
 	  <div class="tasks-content">
-	    <div v-for="(task, index) in tasks" :key="index" class="task-item">
+	    <!-- 从数据库获取到的任务 -->
+	    <div class="task-item" v-for="(task, index) in tasks" :key="index">
 	      <div :class="{'task-completed': task.completed}" @click="toggleTaskCompletion(index)">
 	        <span class="task-name">{{ task.name }}</span>
-	        <p class="task-remarks">{{ task.remarks }}</p>
+	        <p class="task-remarks">{{ task.remarks || '暂无备注' }}</p>
 	      </div>
 	    </div>
 	  </div>
 	</div>
-
-
 
   </div>
 </template>
@@ -154,7 +153,8 @@ export default {
 	  roomFirstTitle: "你今天还没进入自习室学习哦", // 初始大字
 	  roomSubtitle: "不要让自己的梦想偷偷溜走...", // 初始小字
 	  iconSrc: '/static/attention.png', // 初始图标
-
+	  
+	  tasks: []
 	  
     };
   },
@@ -172,7 +172,7 @@ export default {
     this.updateCalendar();
     setInterval(this.calculateCountdown, 1000);
 	this.fetchStudyAnalysis();  // 获取并更新学情分析内容
-	this.getTodayDate();  // 获取当前日期
+	// this.getTodayDate();  // 获取当前日期
 	this.fetchTasksForToday();  // 获取今天的任务
   },
   methods: {
@@ -374,54 +374,36 @@ toggleRoomContent() {
     uni.setStorageSync('lastStudyDate', today); // 记录今天日期
   }
 },
+	fetchTasksForToday() {
+	  const userId = uni.getStorageSync('user_id');  // 获取存储的用户ID
+	  if (!userId) {
+	    uni.showToast({
+	      title: '请先登录',
+	      icon: 'none'
+	    });
+	    return;
+	  }
+	
+	  uniCloud.callFunction({
+	    name: 'getTasksForToday',  // 云函数名称
+	    data: { user_id: userId },  // 传递用户ID
+	    success: (res) => {
+	      if (res.result && res.result.tasks) {
+	        this.tasks = res.result.tasks;  // 更新任务数据
+	      } else {
+	        this.tasks = [];  // 没有任务时清空任务列表
+	      }
+	    },
+	    fail: (error) => {
+	      console.error('获取任务失败:', error);
+	      uni.showToast({
+	        title: '获取任务失败，请重试',
+	        icon: 'none'
+	      });
+	    }
+	  });
+	},
 
-// 加载今天的任务
-    async loadTasksForToday() {
-      const currentDate = new Date().toISOString().split('T')[0];  // 获取当前日期（yyyy-mm-dd）
-
-      try {
-        // 假设通过uniCloud获取数据
-        const res = await uniCloud.callFunction({
-          name: 'getTasksForToday',  // 云函数名
-          data: {
-            user_id: this.userId,
-            date: currentDate  // 过滤出今天的任务
-          }
-        });
-
-        if (res.result && res.result.tasks) {
-          this.tasks = res.result.tasks;
-        } else {
-          this.tasks = [];
-        }
-      } catch (error) {
-        console.error('加载任务失败:', error);
-      }
-    },
-
-    // 切换任务完成状态
-    toggleTaskCompletion(index) {
-      const task = this.tasks[index];
-      task.completed = !task.completed;
-
-      // 更新任务状态
-      this.updateTaskCompletion(task);
-    },
-
-    // 更新任务完成状态到数据库
-    async updateTaskCompletion(task) {
-      try {
-        await uniCloud.callFunction({
-          name: 'updateTaskCompletion',
-          data: {
-            taskId: task._id,  // 任务ID
-            completed: task.completed  // 任务完成状态
-          }
-        });
-      } catch (error) {
-        console.error('更新任务状态失败:', error);
-      }
-    },
     goToTaskPage() {
       console.log("尝试跳转到添加任务页面");
       uni.navigateTo({
@@ -434,9 +416,16 @@ toggleRoomContent() {
         }
       });
     },
+	// 切换任务完成状态
+	      toggleTaskCompletion(index) {
+	        this.tasks[index].completed = !this.tasks[index].completed;
+	      }
     
 
-}
+},
+onLoad() {
+    this.fetchTasksForToday();  // 获取当天的任务
+  }
 };
 </script>
 
@@ -917,14 +906,15 @@ toggleRoomContent() {
 }
 
 .tasks-content {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .task-item {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 0;
-  cursor: pointer;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .task-name {
@@ -932,27 +922,12 @@ toggleRoomContent() {
 }
 
 .task-remarks {
+  font-size: 12px;
   color: #666;
 }
 
-.task-completed .task-name,
-.task-completed .task-remarks {
+.task-completed .task-name {
   text-decoration: line-through;
-  color: #999;
+  color: #bbb;
 }
-
-.divider {
-  width: 100%;
-  height: 1px;
-  background-color: #ccc;
-  margin: 20px 0;
-}
-
-.task-link {
-  color: #0066cc;
-  text-decoration: none;
-}
-
-
-
 </style>

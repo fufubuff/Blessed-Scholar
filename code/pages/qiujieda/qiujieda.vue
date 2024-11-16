@@ -1,12 +1,14 @@
 <template>
   <view class="container">
-    <!-- 头部包含标题和搜索按钮 -->
+  	<view style="height: 20px;"></view>
+    <!-- Header with title and search button -->
     <view class="header">
       <text class="title">小研圈</text>
       <icon type="search" size="24" class="search-icon" />
     </view>
-
-    <!-- 标签导航 -->
+  
+    
+    <!-- Tab Navigation -->
     <view class="tab-bar">
       <view class="tab-container" @click="setActiveTab('求解答')">
         <text class="tab" :class="{ active: activeTab === '求解答' }">求解答</text>
@@ -116,14 +118,14 @@ export default {  data() {
       setActiveTab(tab) {
         this.activeTab = tab;
         if (tab === '关注') {
-          uni.switchTab({
-            url: '/pages/attention/attention' // 切换到关注 Tab
-          });
+          uni.reLaunch({
+          				url:"/pages/jiayouzhan/jiayouzhan"
+          			})
         }
         if (tab === '加油站') {
-          uni.switchTab({
-            url: '/pages/jiayouzhan/jiayouzhan' // 切换到加油站 Tab
-          });
+          uni.reLaunch({
+          				url:"/pages/jiayouzhan/jiayouzhan"
+          			})
         }
     },async fetchPosts() {
   try {
@@ -161,9 +163,9 @@ export default {  data() {
 navigateTo(page) {
   console.log(`Navigating to: ${page}`);
   this.activeNav = page;
-  if (page === 'attention') {
+  if (page === '加油站') {
     uni.navigateTo({
-      url: '/pages/attention/attention'
+      url: '/pages/jiayouzhan/jiayouzhan'
     });
   } else if (page === 'publish') {
     console.log('Attempting to navigate to publish page...');
@@ -191,53 +193,41 @@ navigateTo(page) {
 
 <style scoped>
 .container {
-  display: flex; /* 垂直方向排列 */
+  display: flex;
   flex-direction: column;
-  height: 100%; /* 占满父容器 */
+  height: 100%;
+  background-color: #F8F8F8;
 }
-
 .header {
-  display: flex; /* 水平方向排列 */
+  display: flex;
   flex-direction: row;
-  justify-content: space-between; /* 两端对齐 */
-  align-items: center; /* 垂直居中对齐 */
+  justify-content: space-between;
   padding: 10px;
-  background-color: white; /* 背景色为白色 */
+  background-color: white;
+  align-items: center;
 }
-
 .title {
-  font-size: 20px; /* 标题字体大小 */
-  font-weight: bold; /* 标题加粗 */
+  font-size: 20px;
+  font-weight: bold;
 }
-
 .search-icon {
-  color: #666; /* 搜索图标颜色 */
-  margin-left: auto; /* 自动填充左边距 */
+  font-size: 13px;
+  color: #666;
 }
-
 .tab-bar {
-  display: flex; /* 水平方向排列 */
+  display: flex;
   flex-direction: row;
-  justify-content: space-around; /* 均匀分配 */
-  background-color: #f8f8f8; /* 背景色 */
-  padding: 10px 0; /* 上下内边距 */
-}
-
-.tab {
-  color: #666; /* 标签颜色 */
-  font-size: 15px; /* 标签字体大小 */
-  padding: 10px; /* 内边距 */
-  border: none; /* 无边框 */
-  background: transparent; /* 背景透明 */
-  cursor: pointer; /* 鼠标悬停时显示为指针形状 */
-  flex: 1; /* 均分宽度 */
-  text-align: center; /* 文本居中 */
+  font-weight: bold;
+  justify-content: space-around;
+  background-color: #f8f8f8;
+  padding: 10px 0;
+  position: relative;
 }
 
 .tab.active {
   color: red; /* 选中标签颜色 */
   font-weight: bold; /* 选中标签加粗 */
-  border-bottom: 2px solid #bd3124; /* 选中标签下划线 */
+  border-bottom: 2px solid red; /* 选中标签下划线 */
 }
 
 .post-list {

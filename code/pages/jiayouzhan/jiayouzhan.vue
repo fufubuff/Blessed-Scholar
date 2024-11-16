@@ -146,7 +146,7 @@
 	     </view>
 	   </scroll-view>
 	   <!-- Question Content -->
-	   <scroll-view scroll-y="true" class="question-list" v-if="activeTab === '求解答'">
+	   <scroll-view scroll-y="true" class="question-list" v-if="activeContent === '求解答'">
 	     <view v-for="(question, index) in questions" :key="index" class="question">
 	       <view class="question-container">
 	         <view class="question-header">
@@ -236,9 +236,9 @@ export default {
           date: '2024-10-18',
           content: '第二周，21天模拟，我已经打卡14天，坚持就是胜利呀~ #21天高数模拟卷打卡#',
           images: [
-            '/static/logo.png',
-            '/static/logo.png',
-            '/static/logo.png'
+            '/static/question1.png',
+            '/static/question2.png',
+            '/static/question3.png'
           ],
           liked: false,
           starred: false,
@@ -248,17 +248,41 @@ export default {
       ],
       questions: [
         {
-          author: 'hxy',
-          authorAvatar: '/static/hxy.jpg',
-          date: '2024-10-19',
-          content: '求解答：如何解决这个数学问题？',
-          images: [
-            '/static/logo.png'
-          ],
-          liked: false,
-          starred: false,
-          type: '求解答'
-        },
+                 author: 'hxy',
+                 authorAvatar: '/static/hxy.jpg',
+                 date: '2024-10-19',
+                 content: '求解答：如何解决这个数学问题？',
+                 images: [
+                   '/static/question1.png'
+                 ],
+                 liked: false,
+                 starred: false,
+                 type: '求解答'
+               },
+       		{
+       		  author: 'mx',
+       		  authorAvatar: '/static/mx.jpg',
+       		  date: '2024-10-17',
+       		  content: '求解答：如何解决这个线性代数问题呢，求解答',
+       		  images: [
+       		    '/static/question2.png'
+       		  ],
+       		  liked: true,
+       		  starred: false,
+       		  type: '求解答'
+       		},
+       		{
+       		  author: 'xh',
+       		  authorAvatar: '/static/xh.jpg',
+       		  date: '2024-10-15',
+       		  content: '求解答：请问这个概率问题如何解决？',
+       		  images: [
+       		    '/static/question3.png'
+       		  ],
+       		  liked: false,
+       		  starred: true,
+       		  type: '求解答'
+       		}
         // 可以添加更多的求解答帖子对象
       ]
     };
@@ -599,66 +623,6 @@ navigateTo(page) {
   color: #333;
 }
 
-
-.bottom-nav {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
-  height: 60px; /* 导航栏高度 */
-  background-color: #FFFFFF; /* 导航栏背景颜色 */
-  border-top: 1px solid white; /* 导航栏上方的黑色水平线 */
-  position: fixed; /* 固定在底部 */
-  bottom: 0;
-  width: 100%;
-}
-
-/* 导航项样式 */
-.nav-item {
-  display: flex;
-  flex-direction: row;
-  flex-direction: column;
-  align-items: center;
-}
-.nav-item.active {
-  border: 2px solid red; /* 激活态红色边框 */
-}
-
-/* 导航图标样式 */
-.nav-icon {
-  width: 24px;
-  height: 24px;
-}
-
-/* 导航文本样式 */
-.nav-text {
-  margin-top: 5px;
-  font-size: 12px;
-  color: #000000;
-}
-
-/* 修改第三个导航项的样式为圆角矩形填充为暗红色 */
-.nav-item:nth-child(3) {
-  width: 70px; /* 圆角矩形的宽度 */
-  height: 40px; /* 圆角矩形的高度 */
-  background-color: #bd3124; /* 填充颜色为暗红色 */
-  border-radius: 15px; /* 圆角半径为20px */
-  justify-content: center; /* 垂直居中 */
-  align-items: center; /* 水平居中 */
-}
-
-/* 第三个导航项中的加号样式 */
-.nav-item:nth-child(3)::before {
-  content: '+'; /* 加号字符 */
-  color: white; /* 加号颜色为白色 */
-  font-size: 24px; /* 加号大小 */
-  font-weight: bold; /* 加号加粗 */
-}
-
-/* 移除第三个导航项的图片 */
-.nav-item:nth-child(3) .nav-icon {
-  display: none;
-}
 
 
 .banner{

@@ -145,8 +145,16 @@ export default {
       return today.toISOString().split('T')[0];
     },
     openShareDialog() {
-      // 此处可以添加打开分享弹窗的逻辑
-      console.log("打开分享弹窗");
+      console.log("尝试跳转到发布打卡分享页面");
+      uni.navigateTo({
+        url: '/pages/report_share/report_share',
+        success: () => {
+          console.log("成功跳转到打卡分享页面");
+        },
+        fail: (err) => {
+          console.log("跳转失败:", err);
+        }
+      });
     },
   }
 };
