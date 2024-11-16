@@ -1,0 +1,7 @@
+{
+  "name": "getAlerts",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

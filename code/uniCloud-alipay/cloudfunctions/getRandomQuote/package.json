@@ -1,0 +1,7 @@
+{
+  "name": "getRandomQuote",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

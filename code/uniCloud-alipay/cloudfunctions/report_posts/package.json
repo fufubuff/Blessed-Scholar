@@ -1,0 +1,7 @@
+{
+  "name": "report_posts",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

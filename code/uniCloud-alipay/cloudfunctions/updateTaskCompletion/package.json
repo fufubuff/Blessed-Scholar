@@ -1,0 +1,7 @@
+{
+  "name": "updateTaskCompletion",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

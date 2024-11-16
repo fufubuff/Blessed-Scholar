@@ -1,0 +1,7 @@
+{
+  "name": "getTasksForToday",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
