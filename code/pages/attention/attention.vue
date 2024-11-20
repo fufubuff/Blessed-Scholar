@@ -1,62 +1,80 @@
 <template>
   <view class="container">
-
     <!-- Header with title and search button -->
     <view class="header">
       <text class="title">小研圈</text>
       <icon type="search" size="24" class="search-icon" />
     </view>
 
-    
-
-
-
-
-
-        <!-- 用户头像横向排列 -->
-        <view class="user-list">
-      <view class="user-item" v-for="user in users" :key="user.username">
+    <!-- 用户头像横向排列 -->
+    <view class="user-list">
+      <view
+        class="user-item"
+        v-for="user in users"
+        :key="user.userid"
+        @click="navigateToPersonalPage(user.userid)"
+      >
         <image :src="user.avatar" class="user-avatar"></image>
         <text class="user-name">{{ user.username }}</text>
       </view>
     </view>
+
     <!-- New Content Section -->
     <view class="new-content">
       <view class="content-item" @click="setActiveContent('求解答')">
-        <view :class="['content-border', { 'active-border': activeContent === '求解答' }]">
+        <view
+          :class="['content-border', { 'active-border': activeContent === '求解答' }]"
+        >
           <image src="/static/求解答帖.png" class="content-image" />
         </view>
       </view>
       <view class="content-item" @click="setActiveContent('加油站')">
-        <view :class="['content-border', { 'active-border': activeContent === '加油站' }]">
+        <view
+          :class="['content-border', { 'active-border': activeContent === '加油站' }]"
+        >
           <image src="/static/加油站帖.png" class="content-image" />
         </view>
       </view>
     </view>
 
     <!-- Post Content -->
-    <scroll-view scroll-y="true" class="post-list" v-if="activeContent === '加油站'">
+    <scroll-view
+      scroll-y="true"
+      class="post-list"
+      v-if="activeContent === '加油站'"
+    >
       <view v-for="(post, index) in posts" :key="index" class="post">
         <view class="post-container">
           <view class="post-header">
-            <image :src="post.authorAvatar" class="author-avatar" />
+            <image :src="post.data.user_pho" class="author-avatar" />
             <view>
-              <text class="post-author">{{ post.author }}</text>
-              <text class="post-date">{{ post.date }}</text>
+              <text class="post-author">{{ post.data.user_name }}</text>
+              <text class="post-date">{{ post.data.chat_time }}</text>
             </view>
           </view>
           <view class="post-content">
-            <text>{{ post.content }}</text>
+            <text>{{ post.data.user_chat }}</text>
             <view class="post-images">
-              <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" />
+              <image
+                v-for="(img, idx) in post.data.user_chat_pho"
+                :src="img"
+                :key="idx"
+                class="post-image"
+              />
             </view>
           </view>
           <view class="post-actions">
             <view @click="toggleLike(post)">
-              <image :src="post.liked ? '/static/heart-filled.png' : '/static/heart.png'" class="action-icon" />
+              <image
+                :src="post.liked ? '/static/heart-filled.png' : '/static/heart.png'"
+                class="action-icon"
+              />
             </view>
             <view @click="toggleStar(post)">
-              <image :src="post.starred ? '/static/star-filled.png' : '/static/star.png'" class="action-icon" />
+              <image
+                :src="post.starred ? '/static/star-filled.png' : '/static/star.png'"
+                class="action-icon"
+              />
             </view>
             <view>
               <image src="/static/chat.png" class="action-icon" />
@@ -67,38 +85,58 @@
     </scroll-view>
 
     <!-- Question Content -->
-    <scroll-view scroll-y="true" class="question-list" v-if="activeContent === '求解答'">
-      <view v-for="(question, index) in questions" :key="index" class="question">
-        <view class="question-container">
-          <view class="question-header">
-            <image :src="question.authorAvatar" class="author-avatar" />
-            <view>
-              <text class="question-author">{{ question.author }}</text>
-              <text class="question-date">{{ question.date }}</text>
-            </view>
-          </view>
-          <view class="question-content">
-            <text>{{ question.content }}</text>
-            <view class="question-images">
-              <image v-for="(img, idx) in question.images" :src="img" :key="idx" class="question-image" />
-            </view>
-          </view>
-          <view class="question-actions">
-            <view @click="toggleLike(question)">
-              <image :src="question.liked ? '/static/heart-filled.png' : '/static/heart.png'" class="action-icon" />
-            </view>
-            <view @click="toggleStar(question)">
-              <image :src="question.starred ? '/static/star-filled.png' : '/static/star.png'" class="action-icon" />
-            </view>
-            <view class="answer-button" @click="answerQuestion(question)">
-              <text class="answer-text">回答</text>
-            </view>
-          </view>
+    <!-- 问题内容 -->
+<!-- 问题内容 -->
+<scroll-view
+  scroll-y="true"
+  class="question-list"
+  v-if="activeContent === '求解答'"
+>
+  <view
+    v-for="(question, index) in questions"
+    :key="index"
+    class="question"
+  >
+    <view class="question-container">
+      <view class="question-header">
+        <image :src="question.authorAvatar" class="author-avatar" />
+        <view>
+          <text class="question-author">{{ question.author }}</text>
+          <text class="question-date">{{ question.date }}</text>
         </view>
       </view>
-    </scroll-view>
-
-    
+      <view class="question-content">
+        <text>{{ question.content }}</text>
+        <view class="question-images">
+          <image
+            v-for="(img, idx) in question.images"
+            :src="img"
+            :key="idx"
+            class="question-image"
+          />
+        </view>
+      </view>
+    <view class="question-actions">
+        <!-- 实现回答问题的按钮 -->
+		  <view @click="toggleLike(question)">
+		  <image
+		    :src="questions.liked ? '/static/heart-filled.png' : '/static/heart.png'"
+		    class="action-icon"
+		  />
+		</view>
+		<view @click="toggleStar(question)">
+		  <image
+		    :src="questions.starred ? '/static/star-filled.png' : '/static/star.png'"
+		    class="action-icon"
+		  />
+		</view>
+    <view>
+              <image src="/static/chat.png" class="action-icon" />
+            </view>
+      </view>
+    </view>
+  </view>
+</scroll-view>
   </view>
 </template>
 
@@ -106,93 +144,69 @@
 export default {
   data() {
     return {
-      activeTab: '求解答', // 当前激活的标签
-      posts: [ // 帖子数据数组
-        {
-          author: 'Patisseris Land',
-          date: '刚刚发布',
-          content: '有没有小伙伴觉得张字老师的高数课，有关概念讲解的有点点难...',
-          images: ['/static/logo.png'], // 帖子包含的图片
-          followersCount: 15, // 关注人数
-          liked: false, // 是否已点赞
-          starred: false // 是否已收藏
-        },
-        {
-          author: '柯小布',
-          date: '4分钟前',
-          content: '各位大佬们有没有英语阅读的学习方法，想用提高一下。赐赐',
-          images: [], // 没有图片
-          followersCount: 10,
-          liked: false,
-          starred: false
-        },
-        {
-          author: '骑鱼吃小鱼',
-          date: '6分钟前',
-          content: '现在数学分指南二刷结束，是看81绝还是看题源...',
-          images: [], // 没有图片
-          followersCount: 10,
-          liked: false,
-          starred: false
-        }
-      ],
       activeNav: '小研圈', // 默认激活的导航项
-      activeTab: '关注', // 默认激活的标签
-      activeContent: '', // 默认激活的内容
-      users: [
-        { username: 'mx', avatar: '/static/mx.jpg'},
-        { username: 'hxy', avatar: '/static/hxy.jpg' },
-        { username: 'sjh', avatar: '/static/sjh.jpg' },
-        { username: 'zmx', avatar: '/static/zmx.jpg' },
-        { username: 'xh', avatar: '/static/xh.jpg' },
-        { username: 'ly', avatar: '/static/.jpg' },
-        { username: 'cl', avatar: '/static/cl.jpg' },
-        { username: 'xff', avatar: '/static/xff.jpg' },
-      ],
-      posts: [
-        {
-          author: 'mx',
-          authorAvatar: '/static/mx.jpg',
-          date: '2024-10-18',
-          content: '第二周，21天模拟，我已经打卡14天，坚持就是胜利呀~ #21天高数模拟卷打卡#',
-          images: [
-            '/static/logo.png',
-            '/static/logo.png',
-            '/static/logo.png'
-          ],
-          liked: false,
-          starred: false,
-          type: '加油站'
-        },
-        // 可以添加更多的帖子对象
-      ],
-      questions: [
-        {
-          author: 'hxy',
-          authorAvatar: '/static/hxy.jpg',
-          date: '2024-10-19',
-          content: '求解答：如何解决这个数学问题？',
-          images: [
-            '/static/logo.png'
-          ],
-          liked: false,
-          starred: false,
-          type: '求解答'
-        },
-        // 可以添加更多的求解答帖子对象
-      ]
+      activeContent: '加油站', // 默认激活的内容，可根据需要设置初始值
+      users: [],
+      userid: '', // 当前用户的ID，需要获取
+      posts: [],
+      questions: [],
     };
   },
   methods: {
-    setActiveTab(tab) { // 设置激活的标签
-      this.activeTab = tab;
+    navigateToPersonalPage(userid) {
+      console.log('Navigating to personal page with userid:', userid); // 打印 userid
+      uni.navigateTo({
+        url: `/pages/attention_personalPage/attention_personalPage?userid=${userid}`,
+      });
     },
     setActiveContent(content) {
       this.activeContent = content;
     },
-    navigateTo(page) {
-      // 导航到指定页面的逻辑
+    async fetchPosts() {
+      try {
+        const res = await uniCloud.callFunction({
+          name: 'getAttentionPost',
+          data: {
+            userid: this.userid,
+          },
+        });
+        if (res.result.code === 0) {
+          this.posts = res.result.data;
+        } else {
+          console.error('获取帖子失败：', res.result.msg);
+        }
+      } catch (err) {
+        console.error('调用云函数失败：', err);
+      }
     },
+    async fetchQuestions() {
+    try {
+      console.log('调用 getAttentionQuestion 云函数，参数：', { userid: this.userid });
+      const res = await uniCloud.callFunction({
+        name: 'getAttentionQuestion',
+        data: {
+          userid: this.userid,
+        },
+      });
+      console.log('getAttentionQuestion 返回结果：', res);
+      if (res.result.code === 0) {
+        this.questions = res.result.data;
+        console.log('成功获取 questions 数据：', this.questions);
+      } else {
+        console.error('获取问题失败：', res.result.message);
+        uni.showToast({
+          title: '获取问题失败：' + res.result.message,
+          icon: 'none',
+        });
+      }
+    } catch (err) {
+      console.error('调用云函数失败：', err);
+      uni.showToast({
+        title: '调用云函数失败',
+        icon: 'none',
+      });
+    }
+  },
     toggleLike(post) {
       post.liked = !post.liked;
     },
@@ -202,21 +216,64 @@ export default {
     answerQuestion(question) {
       // 回答问题的逻辑
     },
-  navigateTo(page) {
-    this.activeNav = page;
-    if (page === 'attention') {
-      uni.navigateTo({
-        url: '/pages/attention/attention'
+    navigateTo(page) {
+      this.activeNav = page;
+      if (page === 'attention') {
+        uni.navigateTo({
+          url: '/pages/attention/attention',
+        });
+      } else {
+        // 处理其他页面的导航逻辑
+        uni.navigateTo({
+          url: `/pages/${page}/${page}`,
+        });
+      }
+    },
+  },
+  async created() {
+    // 获取当前用户的 ID，例如从缓存中获取
+    this.userid = uni.getStorageSync('userid');
+
+    // 根据 activeContent 初始值加载内容
+    if (this.activeContent === '求解答') {
+      this.fetchQuestions();
+    } else if (this.activeContent === '加油站') {
+      this.fetchPosts();
+}
+
+    // 获取关注的用户列表
+    try {
+      const res = await uniCloud.callFunction({
+        name: 'getFollowerList',
+        data: {
+          userid: this.userid,
+        },
       });
-    } else {
-      // 处理其他页面的导航逻辑
-      uni.navigateTo({
-        url: `/pages/${page}/${page}`
+      if (res.result.code === 0) {
+        this.users = res.result.data;
+      } else {
+        uni.showToast({
+          title: res.result.message,
+          icon: 'none',
+        });
+      }
+    } catch (error) {
+      console.error('获取关注列表失败:', error);
+      uni.showToast({
+        title: '获取关注列表失败',
+        icon: 'none',
       });
     }
-  }
-  }
-  
+  },
+  watch: {
+  activeContent(newVal) {
+    if (newVal === '求解答') {
+      this.fetchQuestions();
+    } else if (newVal === '加油站') {
+      this.fetchPosts();
+    }
+  },
+},
 };
 </script>
 
@@ -448,13 +505,18 @@ export default {
   margin-top: 5px; /* 减小顶部边距 */
 }
 .answer-button {
+	height: 40px;
   background-color: #bd3124;
   border-radius: 15px;
-  padding: 5px 23px;
+  justify-content: center; /* 水平居中 */
+  align-items: center;    /* 垂直居中 */
+
 }
 .answer-text {
   color: white;
-  font-size: 14px;
+  font-size: 10px;
+  text-align: center; /* 水平居中 */
+  align-items: center;
 }
 
 .user-list {
@@ -481,66 +543,5 @@ export default {
   margin-top: 5px;
   font-size: 12px;
   color: #333;
-}
-
-
-.bottom-nav {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
-  height: 60px; /* 导航栏高度 */
-  background-color: #FFFFFF; /* 导航栏背景颜色 */
-  border-top: 1px solid white; /* 导航栏上方的黑色水平线 */
-  position: fixed; /* 固定在底部 */
-  bottom: 0;
-  width: 100%;
-}
-
-/* 导航项样式 */
-.nav-item {
-  display: flex;
-  flex-direction: row;
-  flex-direction: column;
-  align-items: center;
-}
-.nav-item.active {
-  border: 2px solid red; /* 激活态红色边框 */
-}
-
-/* 导航图标样式 */
-.nav-icon {
-  width: 24px;
-  height: 24px;
-}
-
-/* 导航文本样式 */
-.nav-text {
-  margin-top: 5px;
-  font-size: 12px;
-  color: #000000;
-}
-
-/* 修改第三个导航项的样式为圆角矩形填充为暗红色 */
-.nav-item:nth-child(3) {
-  width: 70px; /* 圆角矩形的宽度 */
-  height: 40px; /* 圆角矩形的高度 */
-  background-color: #bd3124; /* 填充颜色为暗红色 */
-  border-radius: 15px; /* 圆角半径为20px */
-  justify-content: center; /* 垂直居中 */
-  align-items: center; /* 水平居中 */
-}
-
-/* 第三个导航项中的加号样式 */
-.nav-item:nth-child(3)::before {
-  content: '+'; /* 加号字符 */
-  color: white; /* 加号颜色为白色 */
-  font-size: 24px; /* 加号大小 */
-  font-weight: bold; /* 加号加粗 */
-}
-
-/* 移除第三个导航项的图片 */
-.nav-item:nth-child(3) .nav-icon {
-  display: none;
 }
 </style>
