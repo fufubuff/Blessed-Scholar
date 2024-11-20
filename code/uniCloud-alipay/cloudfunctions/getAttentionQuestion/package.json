@@ -1,0 +1,7 @@
+{
+  "name": "getAttentionQuestion",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

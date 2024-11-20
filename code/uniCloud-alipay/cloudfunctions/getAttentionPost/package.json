@@ -1,0 +1,7 @@
+{
+  "name": "getAttentionPost",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
