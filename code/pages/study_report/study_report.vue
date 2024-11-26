@@ -67,19 +67,24 @@ export default {
   },
   methods: {
     fetchTodayStudyDuration() {
-      // 假设云函数名称为 getStudyUsersForToday
+      const userId = uni.getStorageSync('user_id');
+      if (!userId) {
+        uni.showToast({ title: '未登录或用户ID丢失', icon: 'none' });
+        return;
+      }
+    
       uniCloud.callFunction({
-        name: 'getStudyUsersForToday',
+        name: 'getStudyDurationForToday',
         data: {
-          today: new Date().toISOString().split('T')[0] // 发送今天的日期
+          user_id: userId // 传递用户ID
         },
         success: (res) => {
-          if (res.result && res.result.length > 0) {
-            this.totalStudyDuration = res.result.reduce((total, user) => total + user.totalStudyDuration, 0);
-            this.formatDuration(this.totalStudyDuration);
+          if (res.result && res.result.code === 0) {
+            const totalDuration = res.result.totalStudyDuration;
+            this.formatDuration(totalDuration); // 格式化并显示学习时长
           } else {
-            console.log('没有学习记录');
-            uni.showToast({ title: '今天没有学习记录', icon: 'none' });
+            console.log('获取今日学习时长失败:', res.result.msg);
+            uni.showToast({ title: res.result.msg || '获取学习时长失败', icon: 'none' });
           }
         },
         fail: (err) => {
@@ -88,30 +93,32 @@ export default {
         }
       });
     },
+
     fetchWeeklyStudyDuration() {
       const userId = uni.getStorageSync('user_id');
       if (!userId) {
         uni.showToast({ title: '未登录或用户ID丢失', icon: 'none' });
         return;
       }
-
+    
       const weekStart = this.getWeekStartDate();
       const weekEnd = this.getWeekEndDate();
-
+    
       uniCloud.callFunction({
-        name: 'getStudyDurationForWeek',
+        name: 'getStudyDurationForWeek', // 请确保云函数名称与实际名称一致
         data: {
           user_id: userId,
           weekStart: weekStart,
           weekEnd: weekEnd
         },
         success: (res) => {
-          if (res.result && Array.isArray(res.result)) {
-            const totalWeeklyDuration = res.result.reduce((total, user) => total + user.totalStudyDuration, 0);
+          // 检查云函数返回的结果
+          if (res.result && res.result.code === 0) {
+            const totalWeeklyDuration = res.result.totalStudyDuration;
             this.formatWeeklyDuration(totalWeeklyDuration);
           } else {
-            console.log('本周没有学习记录');
-            uni.showToast({ title: '本周没有学习记录', icon: 'none' });
+            console.log('获取本周学习时长失败:', res.result.msg);
+            uni.showToast({ title: res.result.msg || '获取本周学习时长失败', icon: 'none' });
           }
         },
         fail: (err) => {
@@ -120,6 +127,7 @@ export default {
         }
       });
     },
+
     formatDuration(seconds) {
       this.hours = Math.floor(seconds / 3600);
       this.minutes = Math.floor((seconds % 3600) / 60);
@@ -139,7 +147,7 @@ export default {
     getWeekEndDate() {
       const today = new Date();
       const day = today.getDay() || 7;
-      const diff = today.getDate() - day + 7;
+      const diff = today.getDate() - day + 6;
       today.setDate(diff);
       today.setHours(23, 59, 59, 999);
       return today.toISOString().split('T')[0];

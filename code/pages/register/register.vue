@@ -38,8 +38,10 @@ export default {
           // 调用云函数注册用户
           const callRes = await uniCloud.callFunction({
             name: 'userRegister',
-            data: { account, password }
+            data: { account, password },
           });
+		  
+		  console.log("callRes",callRes);
       
           if (callRes.result && callRes.result.success) {
         
@@ -47,6 +49,10 @@ export default {
 			// 存储 account 信息
 			uni.setStorageSync('account', this.form.account);
 			
+			// 存储 user_id
+			const userId = callRes.result.data.user_id;
+			uni.setStorageSync('user_id', userId);
+			console.log("Stored user_id:", userId); // 输出 user_id
     
             uni.showToast({ title: '注册成功', icon: 'success' });
             uni.redirectTo({ url: '/pages/profileComplete/profileComplete' });

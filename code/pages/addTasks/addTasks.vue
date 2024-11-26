@@ -76,12 +76,13 @@ export default {
   },
   methods: {
 	
-    // 获取当前日期
     getCurrentDate() {
       const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');  // 月份从0开始
-      const day = String(today.getDate()).padStart(2, '0');
+      const offset = today.getTimezoneOffset() * 60000;  // 获取时区偏移（分钟）
+      const localTime = new Date(today.getTime() - offset);  // 转换为本地时间
+      const year = localTime.getFullYear();
+      const month = String(localTime.getMonth() + 1).padStart(2, '0');  // 月份从0开始
+      const day = String(localTime.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     },
     // 点击按钮时，更新任务文本区域的内容
@@ -105,12 +106,10 @@ export default {
         this.selectedTimes.splice(index, 1);  // 取消选中的日期
       }
     },
-    // 添加任务
     addTask() {
       const userId = uni.getStorageSync('user_id');
-	  
-	  console.log('当前用户 ID:', userId);  // 打印获取到的 user_id
-  
+      
+      console.log('当前用户 ID:', userId);  // 打印获取到的 user_id
     
       const taskData = {
         name: this.taskText,  // 任务名称
@@ -134,6 +133,11 @@ export default {
             icon: 'success',
             duration: 2000
           });
+          
+          // 跳转到 study_soul 页面
+          uni.switchTab({
+            url: '/pages/study_soul/study_soul'  // 目标页面路径
+          });
         },
         fail: (err) => {
           console.error('任务添加失败:', err);
@@ -145,6 +149,7 @@ export default {
         }
       });
     }
+
 
   }
 };

@@ -32,23 +32,24 @@
     <view class="divider"></view>
 
     <!-- User Posts Section -->
-    <scroll-view scroll-y="true" class="posts-section" v-if="posts.length">
-      <view v-for="(post, index) in posts" :key="index" class="post">
-        <view class="post-header">
-          <image :src="user.avatarUrl" class="post-avatar"></image>
-          <view>
-            <text class="post-author">{{ user.nickname }}</text>
-            <text class="post-date">{{ post.date }}</text>
-          </view>
-        </view>
-        <view class="post-content">
-          <text>{{ post.content }}</text>
-          <view class="post-images">
-            <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" />
-          </view>
-        </view>
+    <!-- 用户帖子区域 -->
+<scroll-view scroll-y="true" class="posts-section" v-if="posts.length">
+  <view v-for="(post, index) in posts" :key="index" class="post">
+    <view class="post-header">
+      <image :src="post.authorAvatar" class="post-avatar"></image>
+      <view>
+        <text class="post-author">{{ post.author }}</text>
+        <text class="post-date">{{ post.date }}</text>
       </view>
-    </scroll-view>
+    </view>
+    <view class="post-content">
+      <text>{{ post.content }}</text>
+      <view class="post-images">
+        <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" />
+      </view>
+    </view>
+  </view>
+</scroll-view>
   </view>
 </template>
 
@@ -65,13 +66,11 @@ export default {
       uni.navigateBack();
     },
     async fetchUserInfo(userid) {
-      console.log('Fetching user info for userid:', userid); // 打印 userid
       try {
         const res = await uniCloud.callFunction({
           name: 'getAttentionPersonalInfo',
           data: { userid }
         });
-        console.log('User info fetched:', res); // 打印返回结果
         if (res.result.code === 0) {
           this.user = res.result.data.user;
           this.posts = res.result.data.posts;
@@ -82,7 +81,6 @@ export default {
           });
         }
       } catch (error) {
-        console.error('获取用户信息失败:', error);
         uni.showToast({
           title: '获取用户信息失败',
           icon: 'none'
@@ -91,7 +89,6 @@ export default {
     }
   },
   onLoad(options) {
-    console.log('Page loaded with options:', options); // 打印页面加载参数
     const { userid } = options;
     if (userid) {
       this.fetchUserInfo(userid);

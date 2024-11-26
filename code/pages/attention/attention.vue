@@ -1,10 +1,27 @@
 <template>
   <view class="container">
+    <view style="height: 20px;"></view>
     <!-- Header with title and search button -->
     <view class="header">
       <text class="title">小研圈</text>
       <icon type="search" size="24" class="search-icon" />
     </view>
+  
+    <!-- Tab Navigation -->
+    <view class="tab-bar">
+  <view class="tab-container" @click="setActiveTab('求解答')">
+    <text class="tab" :class="{ active: activeTab === '求解答' }">求解答</text>
+    <view v-if="activeTab === '求解答'" class="underline"></view>
+  </view>
+  <view class="tab-container" @click="setActiveTab('加油站')">
+    <text class="tab" :class="{ active: activeTab === '加油站' }">加油站</text>
+    <view v-if="activeTab === '加油站'" class="underline"></view>
+  </view>
+  <view class="tab-container" @click="setActiveTab('关注')">
+    <text class="tab" :class="{ active: activeTab === '关注' }">关注</text>
+    <view v-if="activeTab === '关注'" class="underline"></view>
+  </view>
+</view>
 
     <!-- 用户头像横向排列 -->
     <view class="user-list">
@@ -143,16 +160,30 @@
 <script>
 export default {
   data() {
-    return {
-      activeNav: '小研圈', // 默认激活的导航项
-      activeContent: '加油站', // 默认激活的内容，可根据需要设置初始值
-      users: [],
-      userid: '', // 当前用户的ID，需要获取
-      posts: [],
-      questions: [],
-    };
-  },
+  return {
+    activeNav: '小研圈',
+    activeTab: '关注', // 默认激活的标签
+    activeContent: '加油站',
+    users: [],
+    userid: '',
+    posts: [],
+    questions: [],
+  };
+},
   methods: {
+    setActiveTab(tab) {
+    if (tab === '加油站') {
+      uni.reLaunch({
+        url: '/pages/jiayouzhan/jiayouzhan?activeTab=加油站'
+      });
+    } else if (tab === '求解答') {
+      uni.navigateTo({
+        url: '/pages/qiujieda/qiujieda?activeTab=求解答'
+      });
+    } else if (tab === '关注') {
+      // 当前页面，无需跳转
+    }
+  },
     navigateToPersonalPage(userid) {
       console.log('Navigating to personal page with userid:', userid); // 打印 userid
       uni.navigateTo({
@@ -274,6 +305,26 @@ export default {
     }
   },
 },
+    // 统一跳转方法
+    navigateTo(page) {
+      console.log('跳转到页面:', page);
+      const pageMap = {
+        'attention': '/pages/attention/attention',
+        'qiujieda': '/pages/qiujieda/qiujieda',
+        'guanzhu': '/pages/guanzhu/guanzhu',
+        'fensi': '/pages/fensi/fensi',
+        'bianjiziliao': '/pages/bianjiziliao/bianjiziliao',
+        'index': '/pages/index/index',
+        'dakajilu': '/pages/dakajilu/dakajilu',
+        'aihelper': '/pages/aihelper/aihelper', // 新增 aihelper 页面映射
+        // 根据需要添加更多映射
+      };
+      const targetUrl = pageMap[page] || `/pages/${page}/${page}`;  // 如果没有在 pageMap 中找到，则默认跳转
+      console.log('跳转到页面 URL:', targetUrl);
+      uni.navigateTo({
+        url: targetUrl
+      });
+    },
 };
 </script>
 
@@ -282,6 +333,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background-color: #F8F8F8;
 }
 .header {
   display: flex;

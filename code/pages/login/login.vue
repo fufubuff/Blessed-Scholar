@@ -35,6 +35,7 @@ export default {
             });
             
             if (res.result.success) {
+				              const userData = res.result.data;
 				uni.setStorageSync('userInfo', res.result.data);
 				// 存储 account 信息
 				uni.setStorageSync('account', this.form.account);
@@ -43,6 +44,21 @@ export default {
               uni.setStorageSync('user_id', userId);
 			  console.log("Stored user_id:", uni.getStorageSync('user_id')); // 输出 user_id
               
+			          // 在成功登录后添加
+			          uni.setStorageSync('currentUser', res.result.data);
+			  				// 存储 account 信息
+
+			                
+			            // 确保存储包含 nickname 和 avatar
+			            uni.setStorageSync('currentUser', {
+			                    user_id: userData.user_id,
+			                    nickname: userData.nickname,
+			                    avatar: userData.avatar,
+			                    // 添加其他需要的字段
+			                  });
+			  
+			  			  console.log("Stored user_id:", uni.getStorageSync('user_id')); // 输出 user_id
+			  
               uni.showToast({ title: '登录成功', icon: 'success' });
 			  //uni.navigateTo({ url: '/pages/zhuyehuodong/zhuyehuodong' });//自己测试
               uni.switchTab({ url: '/pages/zhuyehuodong/zhuyehuodong' });

@@ -1,13 +1,12 @@
 <template>
   <view class="container">
-	<view style="height: 20px;"></view>
+    <view style="height: 20px;"></view>
     <!-- Header with title and search button -->
     <view class="header">
       <text class="title">小研圈</text>
       <icon type="search" size="24" class="search-icon" />
     </view>
 
-    
     <!-- Tab Navigation -->
     <view class="tab-bar">
       <view class="tab-container" @click="setActiveTab('求解答')">
@@ -23,313 +22,379 @@
         <view v-if="activeTab === '关注'" class="underline"></view>
       </view>
     </view>
- 
- 
-	<view v-if="activeTab === '加油站'">
-		   <scroll-view  :scroll-y="true" style="height: calc(100vh - 180px);">
-	  	   <!-- 横幅区域 -->
-	  	   <view class="banner">
-	  	     <!-- 显示横幅标题 -->
-	  	     <view class="banner-title">21天高数模拟卷打卡活动招募令</view>
-	  	     <!-- 显示横幅副标题 -->
-	  	     <view class="banner-subtitle">每日一模拟，不模拟就淘汰～</view>
-	  	     <view class="banner-bootom">
-	  			 <!-- 显示另一横幅副标题 -->
-	  			 <view class="banner-subtitle_min">来吧，一起坚持21天，做行动派！</view>
-	  			 <view class="banner_btn">
-					 <router-link to="/pages/jiayouzhan/jiayouzhan" style="color: white;text-decoration: none;">
-						 了解详情
-					 </router-link>
-				 </view>
-	  		 </view>
-	  	   </view>
-	  		
-	  		<view class="jyz_li_box">
-	  			<view class="jyz_li" v-for="(item,index) in jyzs" :key="item._id">
-	  				   <view class="jyz_li_left">
-	  					   <image :src="item.data.user_pho"></image>
-	  				   </view>
-	  				   <view class="jyz_li_right">
-	  						<view class="jyz_li_userAndtime">
-	  						   <view>{{ item.data.user_id }}</view>
-	  						   <view>{{ item.data.chat_time }}</view>
-	  						</view>
-	  						<view class="jyz_li_desc">
-	  							{{ item.data.user_chat }}
-	  						</view>
-	  						
-	  						<view class="jyz_li_images">
-	  							<image v-for="(jitem,jindex) in item.data.user_chat_pho" :src="jitem" mode="aspectFill" :key="jitem"></image>
-	  						</view>
-	  						
-	  						 <view class="jyz_li_buts">
-	  							  <view class="jyz_li_buts_item" >
-	  									<image src="../../static/heart.png" class="jyz_li_buts_action-icon" />
-	  									<!-- <image src="../../static/heart-filled.png"></image> -->
-	  									<text class="jyz_li_action-text">{{ item.data.user_liked }}</text>
-	  							  </view>
-	  							  <view class="jyz_li_buts_item">
-	  									<image src="../../static/star.png" class="jyz_li_buts_action-icon" />
-	  									<!-- <image src="../../static/star-filled.png" class="jyz_li_buts_action-icon" /> -->
-	  									<text class="jyz_li_action-text">{{ item.data.user_collected }}</text>
-	  							  </view>
-	  							  <view class="jyz_li_buts_item">
-	  									<image src="../../static/chat.png" class="jyz_li_buts_action-icon" />
-	  									<text class="jyz_li_action-text">{{ item.data.user_comment }}</text>
-	  							  </view>
-	  							  <view class="jyz_li_buts_item">
-	  									<image src="../../static/star.png" class="jyz_li_buts_action-icon" />
-	  									<text class="jyz_li_action-text">{{ item.data.user_forward }}</text>
-	  							  </view>
-	  						</view> 
-	  						
-	  				</view>
-	  				<view class="jyz_li_post">host</view>
-	  			</view>
-	  		</view>
-	  	    </scroll-view>  
-	  </view>
- 
 
-   
-   <view v-if="activeTab === '关注'">
-	   <!-- 用户头像横向排列 -->
-	   <view class="user-list">
-	     <view class="user-item" v-for="user in users" :key="user.username">
-	       <image :src="user.avatar" class="user-avatar"></image>
-	       <text class="user-name">{{ user.username }}</text>
-	     </view>
-	   </view>
-	   <!-- New Content Section -->
-	   <view class="new-content">
-	     <view class="content-item" @click="setActiveContent('求解答')">
-	       <view :class="['content-border', { 'active-border': activeContent === '求解答' }]">
-	         <image src="/static/求解答帖.png" class="content-image" />
-	       </view>
-	     </view>
-	     <view class="content-item" @click="setActiveContent('加油站')">
-	       <view :class="['content-border', { 'active-border': activeContent === '加油站' }]">
-	         <image src="/static/加油站帖.png" class="content-image" />
-	       </view> 
-	     </view>
-	   </view>
-	   
-	   <!-- Post Content -->
-	   <scroll-view scroll-y="true" class="post-list" v-if="activeContent === '加油站'">
-	     <view v-for="(post, index) in posts" :key="index" class="post">
-	       <view class="post-container">
-	         <view class="post-header">
-	           <image :src="post.authorAvatar" class="author-avatar" />
-	           <view>
-	             <text class="post-author">{{ post.author }}</text>
-	             <text class="post-date">{{ post.date }}</text>
-	           </view>
-	         </view>
-	         <view class="post-content">
-	           <text>{{ post.content }}</text>
-	           <view class="post-images">
-	             <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" />
-	           </view>
-	         </view>
-	         <view class="post-actions">
-	           <view @click="toggleLike(post)">
-	             <image :src="post.liked ? '/static/heart-filled.png' : '/static/heart.png'" class="action-icon" />
-	           </view>
-	           <view @click="toggleStar(post)">
-	             <image :src="post.starred ? '/static/star-filled.png' : '/static/star.png'" class="action-icon" />
-	           </view>
-	           <view>
-	             <image src="/static/chat.png" class="action-icon" />
-	           </view>
-	         </view>
-	       </view>
-	     </view>
-	   </scroll-view>
-	   <!-- Question Content -->
-	   <scroll-view scroll-y="true" class="question-list" v-if="activeContent === '求解答'">
-	     <view v-for="(question, index) in questions" :key="index" class="question">
-	       <view class="question-container">
-	         <view class="question-header">
-	           <image :src="question.authorAvatar" class="author-avatar" />
-	           <view>
-	             <text class="question-author">{{ question.author }}</text>
-	             <text class="question-date">{{ question.date }}</text>
-	           </view>
-	         </view>
-	         <view class="question-content">
-	           <text>{{ question.content }}</text>
-	           <view class="question-images">
-	             <image v-for="(img, idx) in question.images" :src="img" :key="idx" class="question-image" />
-	           </view>
-	         </view>
-	         <view class="question-actions">
-	           <view @click="toggleLike(question)">
-	             <image :src="question.liked ? '/static/heart-filled.png' : '/static/heart.png'" class="action-icon" />
-	           </view>
-	           <view @click="toggleStar(question)">
-	             <image :src="question.starred ? '/static/star-filled.png' : '/static/star.png'" class="action-icon" />
-	           </view>
-	           <view class="answer-button" @click="answerQuestion(question)">
-	             <text class="answer-text">回答</text>
-	           </view>
-	         </view>
-	       </view>
-	     </view>
-	   </scroll-view>
-   </view>
-</view>
-    <!-- Bottom Navigation Bar -->
+    <!-- 错误信息显示 -->
+    <view v-if="loadError" class="error-message">
+      <text>{{ loadError }}</text>
+    </view>
+
+    <!-- 加油站内容 -->
+    <view v-if="activeTab === '加油站'">
+      <scroll-view :scroll-y="true" style="height: calc(100vh - 180px);">
+        <!-- 横幅区域 -->
+        <view class="banner">
+          <view class="banner-title">21天高数模拟卷打卡活动招募令</view>
+          <view class="banner-subtitle">每日一模拟，不模拟就淘汰～</view>
+          <view class="banner-bottom">
+            <view class="banner-subtitle_min">来吧，一起坚持21天，做行动派！</view>
+            <view class="banner-btn">
+              <!-- 可以添加按钮或其他内容 -->
+            </view>
+          </view>
+        </view>
+
+        <!-- 帖子列表 -->
+        <view class="jyz_li_box">
+          <view class="jyz_li" v-for="(item, index) in jyzs" :key="item._id" @click="goToPostDetail(item._id)">
+            <view class="jyz_li_left">
+              <image :src="item.data.user_pho" class="user-avatar"></image>
+            </view>
+            <view class="jyz_li_right">
+              <view class="jyz_li_userAndtime">
+                <view class="user-name">{{ item.data.nickname }}</view>
+                <view class="date">{{ item.data.chat_time }}</view>
+              </view>
+              <view class="jyz_li_desc">
+                {{ item.data.user_chat }}
+              </view>
+              <view class="jyz_li_images">
+                <image v-for="(jitem, jindex) in item.data.user_chat_pho" :src="jitem" mode="aspectFill" :key="jindex" class="post-image"></image>
+              </view>
+              <view class="jyz_li_buts">
+                <!-- 点赞按钮 -->
+                <view class="jyz_li_buts_item" @click="likePost(item)">
+                  <image :src="item.isLiked ? '../../static/heart-filled.png' : '../../static/heart.png'" class="jyz_li_buts_action-icon" />
+                  <text class="jyz_li_action-text">{{ item.data.user_liked }}</text>
+                </view>
+
+                <!-- 收藏按钮 -->
+                <view class="jyz_li_buts_item" @click="collectPost(item)">
+                  <image :src="item.isCollected ? '../../static/star-filled.png' : '../../static/star.png'" class="jyz_li_buts_action-icon" />
+                  <text class="jyz_li_action-text">{{ item.data.user_collected }}</text>
+                </view>
+
+                <!-- 评论按钮 -->
+                <view class="jyz_li_buts_item">
+                  <image src="../../static/chat.png" class="jyz_li_buts_action-icon" />
+                  <text class="jyz_li_action-text">{{ item.data.user_comment }}</text>
+                </view>
+              </view>
+
+              <view class="jyz_li_post">host</view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+
+        <!-- 悬浮发布按钮 -->
+        <view class="floating-button" @click="navigateToPublish">
+          <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="40"
+        height="40"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <path
+          d="M14.5 6l3 3L8.4 18.6a0.8 0.8 0 01-.35.2l-3.2 0.8a0.8 0.8 0 01-.95-.95l0.8-3.2a0.8 0.8 0 01.2-.35L14.5 6zm1.2-1.2l1.2-1.2a0.8 0.8 0 011.1 0l1.5 1.5a0.8 0.8 0 010 1.1l-1.2 1.2-2.6-2.6z"
+          fill="#D32F2F"
+        />
+      </svg>
+    </view>
+  </view>
+
+
 </template>
 
 <script>
 export default {
   data() {
     return {
-	  jyzs:[],
+      jyzs: [],
       activeTab: '加油站', // 当前激活的标签
-      posts: [ // 帖子数据数组
-        {
-          author: 'Patisseris Land',
-          date: '刚刚发布',
-          content: '有没有小伙伴觉得张字老师的高数课，有关概念讲解的有点点难...',
-          images: ['/static/logo.png'], // 帖子包含的图片
-          followersCount: 15, // 关注人数
-          liked: false, // 是否已点赞
-          starred: false // 是否已收藏
-        },
-        {
-          author: '柯小布',
-          date: '4分钟前',
-          content: '各位大佬们有没有英语阅读的学习方法，想用提高一下。赐赐',
-          images: [], // 没有图片
-          followersCount: 10,
-          liked: false,
-          starred: false
-        },
-        {
-          author: '骑鱼吃小鱼',
-          date: '6分钟前',
-          content: '现在数学分指南二刷结束，是看81绝还是看题源...',
-          images: [], // 没有图片
-          followersCount: 10,
-          liked: false,
-          starred: false
-        }
-      ],
-      activeNav: '小研圈', // 默认激活的导航项
-      activeTab: '加油站', // 默认激活的标签
-      activeContent: '', // 默认激活的内容
-      users: [
-        { username: 'mx', avatar: '/static/mx.jpg'},
-        { username: 'hxy', avatar: '/static/hxy.jpg' },
-        { username: 'sjh', avatar: '/static/sjh.jpg' },
-        { username: 'zmx', avatar: '/static/zmx.jpg' },
-        { username: 'xh', avatar: '/static/xh.jpg' },
-        { username: 'ly', avatar: '/static/hxy.jpg' },
-        { username: 'cl', avatar: '/static/cl.jpg' },
-        { username: 'xff', avatar: '/static/xff.jpg' },
-      ],
-      posts: [
-        {
-          author: 'mx',
-          authorAvatar: '/static/mx.jpg',
-          date: '2024-10-18',
-          content: '第二周，21天模拟，我已经打卡14天，坚持就是胜利呀~ #21天高数模拟卷打卡#',
-          images: [
-            '/static/question1.png',
-            '/static/question2.png',
-            '/static/question3.png'
-          ],
-          liked: false,
-          starred: false,
-          type: '加油站'
-        },
-        // 可以添加更多的帖子对象
-      ],
-      questions: [
-        {
-                 author: 'hxy',
-                 authorAvatar: '/static/hxy.jpg',
-                 date: '2024-10-19',
-                 content: '求解答：如何解决这个数学问题？',
-                 images: [
-                   '/static/question1.png'
-                 ],
-                 liked: false,
-                 starred: false,
-                 type: '求解答'
-               },
-       		{
-       		  author: 'mx',
-       		  authorAvatar: '/static/mx.jpg',
-       		  date: '2024-10-17',
-       		  content: '求解答：如何解决这个线性代数问题呢，求解答',
-       		  images: [
-       		    '/static/question2.png'
-       		  ],
-       		  liked: true,
-       		  starred: false,
-       		  type: '求解答'
-       		},
-       		{
-       		  author: 'xh',
-       		  authorAvatar: '/static/xh.jpg',
-       		  date: '2024-10-15',
-       		  content: '求解答：请问这个概率问题如何解决？',
-       		  images: [
-       		    '/static/question3.png'
-       		  ],
-       		  liked: false,
-       		  starred: true,
-       		  type: '求解答'
-       		}
-        // 可以添加更多的求解答帖子对象
-      ]
+      currentUserId: '', // 动态获取的当前用户ID
+      loadError: '' // 用于显示加载错误
     };
   },
   async onLoad() {
-  	   let res=await uniCloud.callFunction({
-  	   	name:"getPsot_CARD"
-  	   });
-	   this.jyzs=res.result.data;
-	   console.log(res);
+    console.log('onLoad 钩子被调用');
+    try {
+      const user = uni.getStorageSync('currentUser');
+      console.log('获取到的 currentUser:', user); // 调试信息
+
+      if (user && user.user_id) {
+        this.currentUserId = user.user_id;
+        console.log('已获取用户信息:', user);
+      } else {
+        // 未登录，跳转到登录页面
+        uni.showToast({ title: '请先登录', icon: 'none' });
+        uni.navigateTo({ url: '/pages/login/login' });
+        return;
+      }
+
+      console.log('当前用户ID:', this.currentUserId);
+
+      // 调用云函数获取数据
+      console.log('调用云函数 getPost_CARD...');
+      const res = await uniCloud.callFunction({
+        name: "getPost_CARD"
+      });
+      console.log('云函数返回:', res);
+      // 调用云函数后，打印返回的完整结果
+      console.log('云函数返回:', JSON.stringify(res));
+      console.log('获取到的帖子数据:', res.result.data);
+
+      if (res.result && res.result.success && res.result.data) {
+        this.jyzs = res.result.data.map(item => ({
+          ...item,
+          isLiked: Array.isArray(item.data.liked_users)
+            ? item.data.liked_users.includes(this.currentUserId)
+            : false,
+          isCollected: Array.isArray(item.data.collected_users)
+            ? item.data.collected_users.includes(this.currentUserId)
+            : false,
+        }));
+        console.log('帖子数据:', this.jyzs);
+      } else if (res.result && res.result.error) {
+        console.error('云函数错误:', res.result.error);
+        this.loadError = res.result.error;
+        throw new Error(res.result.error);
+      } else {
+        console.error('未返回有效的数据');
+        this.loadError = '未返回有效的数据';
+        throw new Error('未返回有效的数据');
+      }
+    } catch (error) {
+      console.error('数据加载失败:', error);
+      this.loadError = error.message || '数据加载失败';
+      uni.showToast({
+        title: '数据加载失败',
+        icon: 'none'
+      });
+    }
   },
+  async onShow() {
+    // 每次页面显示时，重新获取帖子数据
+    await this.fetchPosts();
+  },
+
   methods: {
-    setActiveTab(tab) { // 设置激活的标签
+
+    navigateToPublish() {
+      uni.navigateTo({
+        url: '/pages/publish-post/publish-post'
+      });
+    },
+
+
+
+
+    async fetchPosts() {
+      try {
+        const res = await uniCloud.callFunction({
+          name: "getPost_CARD"
+        });
+        if (res.result && res.result.success && res.result.data) {
+          this.jyzs = res.result.data.map(item => ({
+            ...item,
+            isLiked: Array.isArray(item.data.liked_users)
+              ? item.data.liked_users.includes(this.currentUserId)
+              : false,
+            isCollected: Array.isArray(item.data.collected_users)
+              ? item.data.collected_users.includes(this.currentUserId)
+              : false,
+          }));
+        } else if (res.result && res.result.error) {
+          this.loadError = res.result.error;
+        } else {
+          this.loadError = '未返回有效的数据';
+        }
+      } catch (error) {
+        this.loadError = '数据加载失败';
+      }
+    },
+
+
+        goToPostDetail(postId) {
+      uni.navigateTo({
+        url: `/pages/post-detail/post-detail?id=${postId}`
+      });
+    },
+    // 点赞功能
+// 点赞功能
+async likePost(item) {
+      try {
+        // 判断当前状态，决定是点赞还是取消点赞
+        const action = Array.isArray(item.data.liked_users)
+          ? item.data.liked_users.includes(this.currentUserId) ? 'unlike' : 'like'
+          : 'like';
+        console.log(`调用点赞云函数，帖子ID: ${item._id}, 动作: ${action}`);
+
+        const res = await uniCloud.callFunction({
+          name: 'updateLike',
+          data: {
+            postId: item._id,
+            userId: this.currentUserId,
+            action: action
+          },
+        });
+        console.log('点赞云函数返回:', res);
+
+        if (res.result && res.result.success && res.result.updated) {
+          if (action === 'like') {
+            item.data.liked_users.push(this.currentUserId);
+            item.data.user_liked += 1;
+            item.isLiked = true; // 更新 isLiked 状态
+            uni.showToast({
+              title: '点赞成功',
+              icon: 'success'
+            });
+          } else {
+            const index = item.data.liked_users.indexOf(this.currentUserId);
+            if (index > -1) {
+              item.data.liked_users.splice(index, 1);
+              item.data.user_liked -= 1;
+            }
+            item.isLiked = false; // 更新 isLiked 状态
+            uni.showToast({
+              title: '取消点赞',
+              icon: 'success'
+            });
+          }
+
+          // 触发事件以同步其他页面
+          uni.$emit('updatePost', item._id, {
+            user_liked: item.data.user_liked,
+            liked_users: item.data.liked_users,
+            isLiked: item.isLiked
+          });
+        } else {
+          uni.showToast({
+            title: res.result.message || '操作失败',
+            icon: 'none'
+          });
+          console.error('云函数返回错误:', res.result.message);
+        }
+      } catch (error) {
+        console.error('点赞操作失败', error);
+        uni.showToast({
+          title: '操作失败',
+          icon: 'none'
+        });
+      }
+    },
+    // 收藏功能
+    // 收藏功能
+    async collectPost(item) {
+    try {
+      const action = item.isCollected ? 'uncollect' : 'collect';
+      console.log(`调用收藏云函数，帖子ID: ${item._id}, 动作: ${action}`);
+      
+      const res = await uniCloud.callFunction({
+        name: 'updateCollect',
+        data: {
+          postId: item._id,
+          userId: this.currentUserId,
+          action: action
+        }
+      });
+      console.log('收藏云函数返回:', res);
+      console.log('云函数返回结构:', JSON.stringify(res));
+      
+      // 修改条件判断，访问 res.result.updated
+      if (res.result && res.result.updated) {
+        if (action === 'collect') {
+          item.data.collected_users.push(this.currentUserId);
+          item.data.user_collected += 1;
+          item.isCollected = true;
+          uni.showToast({
+            title: '收藏成功',
+            icon: 'success'
+          });
+        } else {
+          const index = item.data.collected_users.indexOf(this.currentUserId);
+          if (index > -1) {
+            item.data.collected_users.splice(index, 1);
+            item.data.user_collected -= 1;
+          }
+          item.isCollected = false;
+          uni.showToast({
+            title: '已取消收藏',
+            icon: 'none'
+          });
+        }
+
+        // 触发事件同步更新
+        uni.$emit('updatePost', item._id, {
+          user_collected: item.data.user_collected,
+          collected_users: item.data.collected_users,
+          isCollected: item.isCollected
+        });
+      } else if (res.result && res.result.message) {
+        uni.showToast({
+          title: res.result.message,
+          icon: 'none'
+        });
+        console.error('云函数返回错误:', res.result.message);
+      } else {
+        uni.showToast({
+          title: '操作失败',
+          icon: 'none'
+        });
+        console.error('云函数返回错误: 操作失败');
+      }
+    } catch (error) {
+      console.error('收藏操作失败', error);
+      uni.showToast({
+        title: '操作失败',
+        icon: 'none'
+      });
+    }
+  },
+
+    // 设置激活的标签
+    setActiveTab(tab) {
+    if (tab === '加油站') {
       this.activeTab = tab;
-	  if (tab === '求解答') {
-	      uni.navigateTo({
-	        url: '/pages/qiujieda/qiujieda' // 跳转到求解答页面
-	      });
-	    }
-	  		if (tab === '加油站') {
-	  		    uni.navigateTo({
-	  		      url: '/pages/jiayouzhan/jiayouzhan' // 跳转到求解答页面
-	  		    });
-	  		  }
+      console.log('切换到标签:', tab);
+    }
+    if (tab === '求解答') {
+      // 不修改 activeTab，直接跳转到 attention 页面
+      uni.navigateTo({
+        url: '/pages/qiujieda/qiujieda'
+      });
+    }
+    if (tab === '关注') {
+      // 不修改 activeTab，直接跳转到 attention 页面
+      uni.navigateTo({
+        url: '/pages/attention/attention'
+      });
+    }
+  },
+
+    // 统一跳转方法
+    navigateTo(page) {
+      console.log('跳转到页面:', page);
+      const pageMap = {
+        'attention': '/pages/attention/attention',
+        'qiujieda': '/pages/qiujieda/qiujieda',
+        'guanzhu': '/pages/guanzhu/guanzhu',
+        'fensi': '/pages/fensi/fensi',
+        'bianjiziliao': '/pages/bianjiziliao/bianjiziliao',
+        'index': '/pages/index/index',
+        'dakajilu': '/pages/dakajilu/dakajilu',
+        'aihelper': '/pages/aihelper/aihelper', // 新增 aihelper 页面映射
+        // 根据需要添加更多映射
+      };
+      const targetUrl = pageMap[page] || `/pages/${page}/${page}`;  // 如果没有在 pageMap 中找到，则默认跳转
+      console.log('跳转到页面 URL:', targetUrl);
+      uni.navigateTo({
+        url: targetUrl
+      });
     },
-    setActiveContent(content) {
-      this.activeContent = content;
-    },
-navigateTo(page) {
-  this.activeNav = page;
-  const pageMap = {
-    'attention': '/pages/attention/attention',
-    'qiujieda': '/pages/qiujieda/qiujieda',
-    'guanzhu': '/pages/guanzhu/guanzhu',
-    'fensi': '/pages/fensi/fensi',
-    'bianjiziliao': '/pages/bianjiziliao/bianjiziliao',
-    'index': '/pages/index/index',
-    'dakajilu': '/pages/dakajilu/dakajilu',
-    'aihelper': '/pages/aihelper/aihelper', // 新增 aihelper 页面映射
-    // 根据需要添加更多映射
-  };
-  const targetUrl = pageMap[page] || `/pages/${page}/${page}`;  // 如果没有在 pageMap 中找到，则默认跳转
-  uni.navigateTo({
-    url: targetUrl
-  });
-}
-,
+
     toggleLike(post) {
       post.liked = !post.liked;
     },
@@ -338,24 +403,39 @@ navigateTo(page) {
     },
     answerQuestion(question) {
       // 回答问题的逻辑
-    },
-navigateTo(page) {
-  this.activeNav = page;
-  if (page === 'attention') {
-    uni.navigateTo({
-      url: '/pages/attention/attention'
+    }
+  },
+  mounted() {
+    // 监听来自其他页面的更新事件
+    uni.$on('updatePost', (postId, updates) => {
+      const post = this.jyzs.find(p => p._id === postId);
+      if (post) {
+        console.log(`接收到 updatePost 事件，postId: ${postId}, updates:`, updates);
+        // 更新 liked_users 和 isLiked
+        if (updates.liked_users !== undefined) {
+          post.data.liked_users = updates.liked_users;
+        }
+        if (updates.isLiked !== undefined) {
+          post.isLiked = updates.isLiked;
+        }
+        // 更新收藏相关字段
+        if (updates.user_collected !== undefined) {
+          post.data.user_collected = updates.user_collected;
+        }
+        if (updates.isCollected !== undefined) {
+          post.isCollected = updates.isCollected;
+        }
+        console.log('更新后的帖子:', post);
+      } else {
+        console.warn(`未找到 ID 为 ${postId} 的帖子`);
+      }
     });
-  } else if (page === 'qiujieda') {
-    uni.navigateTo({
-      url: '/pages/qiujieda/qiujieda'
-    });
-  } else {
-    uni.navigateTo({
-      url: `/pages/${page}/${page}`
-    });
-  }
-}
-}
+  },
+  beforeDestroy() {
+    // 移除事件监听
+    uni.$off('updatePost');
+  },
+
 };
 </script>
 
@@ -410,109 +490,113 @@ navigateTo(page) {
   background-color: red;
   margin-top: 5px;
 }
-.profile-row {
-  display: flex; 
-  flex-direction: row;
-  padding-top: 0px ;
-  background-color: #FFFFFF;
-  overflow-x: auto; /* 允许横向滚动 */
-  align-items: center; /* 垂直居中 */
-  padding-left: 20px; /* 离左边界一定距离 */
+.error-message {
+  color: red;
+  text-align: center;
+  margin: 10px 0;
 }
-.profile-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 20px;
+.banner {
+  background-color: #636363;
+  padding: 40rpx 30rpx 20rpx 20rpx;
+  color: white;
+  background-image: url("../../static/activitybg.jpg");
+  background-size: cover;
 }
-.profile-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-}
-.profile-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.username {
-  font-size: 18px;
-  color: #333;
-}
-.new-content {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  background-color: #f8f8f8;
-  padding-top: 5px ;
-  padding-bottom: 5px;
-}
-.content-item {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.content-border {
-  width: 130px;
-  height: 40px;
-  border: 2px solid #999; /* 深灰色边框 */
-  border-radius: 15px; /* 圆角矩形 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.active-border {
-  border-color: #bd3124; /* 激活时边框变红 */
-}
-.content-image {
-  width: 30px;
-  height: 30px;
-}
-.post-list {
-  flex: 1;
-  overflow-y: auto; /* 允许纵向滚动 */
-}
-.post {
-  background-color: #ffffff;
-  padding: 6px;
-  margin: 6px ;
-  border-radius: 8px;
-}
-.post-container {
-  background-color: #f8f8f8;
-  border-radius: 10px;
-  padding: 10px; /* 减小内边距 */
-  margin-bottom: 10px;
-  border: 2px solid #bd3124; /* 枣红色边框 */
-}
-.post-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 8px; /* 减小底部边距 */
-}
-.author-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-.post-author {
+.banner-title {
+  font-size: 34rpx;
   font-weight: bold;
 }
-.post-date {
-  color: #999;
-  font-size: 8px;
+.banner-subtitle {
+  margin-top: 45rpx;
 }
-.post-content {
-  font-size: small;
-  margin-top: 5px; /* 减小顶部边距 */
-}
-.post-images {
+.banner-bottom {
+  margin-top: 20rpx;
   display: flex;
-  flex-direction: row;
-  margin-top: 5px; /* 减小顶部边距 */
+  justify-content: space-between;
+}
+.banner-btn {
+  font-size: 24rpx;
+  background-color: #914235;
+  padding: 12rpx;
+  border-radius: 30rpx;
+}
+.jyz_li_box {
+  padding: 20rpx;
+}
+.jyz_li {
+  background-color: white;
+  padding: 30rpx;
+  display: flex;
+  position: relative;
+  margin-bottom: 20rpx;
+}
+.jyz_li_post {
+  position: absolute;
+  right: 0rpx;
+  top: 0rpx;
+  background-color: #D47970;
+  color: white; 
+  padding: 10rpx;
+  border-top-right-radius: 20rpx;
+  border-bottom-left-radius: 20rpx;
+}
+.jyz_li_left image {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+}
+.jyz_li_left {
+  flex-shrink: 0;
+}
+.jyz_li_right {
+  flex: 1;
+  padding-left: 30rpx;
+}
+.jyz_li_userAndtime {
+  display: flex;
+}
+.jyz_li_userAndtime > view:nth-child(1) {
+  font-weight: bold;
+  font-size: 30rpx;
+}
+.jyz_li_userAndtime > view:nth-child(2) {
+  font-size: 28rpx;
+  margin-left: 20rpx;
+  color: #CFCFCF;
+} 
+.jyz_li_desc {
+  margin-top: 30rpx;
+  margin-bottom: 30rpx;
+  font-size: 26rpx;
+  color: #6B6B6A;
+  padding-right: 10rpx;
+}
+.jyz_li_images {
+  display: flex;
+  flex-wrap: wrap;
+}
+.jyz_li_images image {
+  width: 200rpx;
+  height: 200rpx;
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
+}
+.jyz_li_buts {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40rpx;
+}
+.jyz_li_buts image {
+  width: 40rpx;
+  height: 40rpx;
+}
+.jyz_li_buts_item {
+  display: flex;
+  align-items: center;
+}
+.jyz_li_action-text {
+  margin-left: 10rpx;
+  color: #5B6B73;
 }
 .post-image {
   width: 70px;
@@ -520,216 +604,30 @@ navigateTo(page) {
   margin-right: 5px;
   border-radius: 4px;
 }
-.post-actions {
+
+
+
+/* 悬浮发布按钮样式 */
+.floating-button {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  width: 45px;
+  height: px;
+  background-color: #f19d8c;
+  border-radius: 50%;
   display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  margin-top: 5px; /* 减小顶部边距 */
-}
-.action-icon {
-  width: 24px;
-  height: 24px;
-}
-.question-list {
-  flex: 1;
-  overflow-y: auto; /* 允许纵向滚动 */
-}
-.question {
-  background-color: #ffffff;
-  padding: 6px;
-  margin: 6px ;
-  border-radius: 8px;
-}
-.question-container {
-  background-color: #f8f8f8;
-  border-radius: 10px;
-  padding: 10px; /* 减小内边距 */
-  margin-bottom: 10px;
-  border: 2px solid #bd3124; /* 枣红色边框 */
-}
-.question-header {
-  display: flex;
-  flex-direction: row;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 8px; /* 减小底部边距 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  z-index: 1000;
 }
-.author-avatar {
+.floating-button:hover {
+  background-color: #e64a19;
+}
+.floating-icon {
   width: 30px;
   height: 30px;
-  border-radius: 50%;
-  margin-right: 8px;
 }
-.question-author {
-  font-weight: bold;
-}
-.question-date {
-  color: #999;
-  font-size: 8px;
-}
-.question-content {
-  font-size: small;
-  margin-top: 5px; /* 减小顶部边距 */
-}
-.question-images {
-  display: flex;
-  flex-direction: row;
-  margin-top: 5px; /* 减小顶部边距 */
-}
-.question-image {
-  width: 70px;
-  height: 70px;
-  margin-right: 5px;
-  border-radius: 4px;
-}
-.question-actions {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  margin-top: 5px; /* 减小顶部边距 */
-}
-.answer-button {
-  background-color: #bd3124;
-  border-radius: 15px;
-  padding: 5px 23px;
-}
-.answer-text {
-  color: white;
-  font-size: 14px;
-}
-
-.user-list {
-  display: flex;
-  flex-direction: row; /* 横向排列 */
-  overflow-x: auto; /* 横向滚动 */
-  padding: 10px;
-}
-
-.user-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 10px;
-}
-
-.user-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-}
-
-.user-name {
-  margin-top: 5px;
-  font-size: 12px;
-  color: #333;
-}
-
-
-
-.banner{
-	background-color: #636363;
-	padding: 40rpx 30rpx 20rpx 20rpx;
-	color: white;
-	background-image: url("../../static/activitybg.jpg");
-	background-size: cover;
-}
-.banner-title{
-	font-size: 34rpx;
-	font-weight: bold;
-}
-.banner-subtitle{
-	margin-top: 45rpx;
-}
-.banner-bootom{
-	margin-top: 20rpx;
-	display: flex;
-	justify-content: space-between;
-}
-.banner_btn{
-	font-size: 24rpx;
-	background-color: #914235;
-	padding: 12rpx;
-	border-radius: 30rpx;
-}
-.jyz_li_box{
-	padding: 20rpx;
-	
-}
-
-.jyz_li{
-	background-color: white;
-	padding: 30rpx;
-	display: flex;
-	position: relative;
-	margin-bottom: 20rpx;
-}
-.jyz_li_post{
-	position: absolute;
-	right: 0rpx;
-	top: 0rpx;
-	background-color: #D47970;
-	color: white; 
-	padding: 10rpx;
-	border-top-right-radius: 20rpx;
-	border-bottom-left-radius: 20rpx;
-}
-.jyz_li_left image{
-	width: 60rpx;
-	height: 60rpx;
-	border-radius: 50%;
-}
-.jyz_li_left{
-	flex-shrink: 0;
-}
-.jyz_li_right{
-	flex: 1;
-	padding-left: 30rpx;
-}
-.jyz_li_userAndtime{
-	display: flex;
-}
-.jyz_li_userAndtime >view:nth-child(1){
-	font-weight: bold;
-	font-size: 30rpx;
-}
- .jyz_li_userAndtime >view:nth-child(2){
- 	font-size: 28rpx;
-	margin-left: 20rpx;
-	color: #CFCFCF;
- } 
- .jyz_li_desc{
-	 margin-top: 30rpx;
-	 margin-bottom: 30rpx;
-	 font-size: 26rpx;
-	 color: #6B6B6A;
-	 padding-right: 10rpx;
- }
- .jyz_li_images{
-	 display: flex;
-	 flex-wrap: wrap;
- }
- .jyz_li_images image{
-	 width: 200rpx;
-	 height: 200rpx;
-	 margin-right: 12rpx;
-	 margin-bottom: 12rpx;
- }
- .jyz_li_buts{
-	 margin-top: 40rpx;
- }
- .jyz_li_buts image{
-	 width: 40rpx;
-	 height: 40rpx;
- }
- .jyz_li_buts_item{
-	 display: flex;
-	 align-items: center;
- }
- .jyz_li_action-text{
-	 margin-left: 10rpx;
-	 color: #5B6B73;
- }
- .jyz_li_buts{
-	 display: flex;
-	 justify-content: space-between;
- }
 </style>

@@ -9,8 +9,7 @@
 
     <!-- 标题部分 -->
     <div class="title-input">
-      <span v-if="title" class="title-text">{{ title }}</span>
-      <input v-else v-model="title" placeholder="输入标题..." class="title-placeholder">
+      <input v-model="title" placeholder="输入标题..." class="title-placeholder">
     </div>
 
     <!-- 分割线 -->
@@ -18,19 +17,24 @@
 
     <!-- 内容部分 -->
     <div class="content-input">
-      <textarea v-model="content" placeholder="开始编辑内容..." class="content-textarea"></textarea>
+      <textarea v-model="content" placeholder="开始编辑内容..." class="content-textarea" maxlength="-1"></textarea>
     </div>
 
     <!-- 图片上传区 -->
     <div class="image-upload">
       <div v-for="(image, index) in images" :key="index" class="uploaded-image">
-        <img :src="image.url" :alt="'Uploaded image ' + index" v-if="image.url" />
-        <button @click="removeImage(index)">移除</button>
+        <img :src="image.url" :alt="'Uploaded image ' + index" />
+        <button @click="removeImage(index)" class="remove-button">&times;</button>
       </div>
-      <label v-if="images.length < 3" class="upload-btn">
-        <input type="file" accept="image/*" @change="chooseImage" />
+      <div v-if="images.length < 3" class="upload-btn" @click="chooseImage">
         <img src="/static/addimg.png" alt="Add Image" class="upload-icon" />
-      </label>
+      </div>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="upload-tips">
+      <p class="max-images">最多上传三张图片哦><</p>
+      <p class="share-success">分享成功 FUB+5</p>
     </div>
   </div>
 </template>
@@ -45,84 +49,145 @@ export default {
     };
   },
   methods: {
+    // 取消发布，返回上一页或清空内容
     cancel() {
-      console.log("取消按钮被点击");
-      this.$router.go(-1);  // 返回上一页
+      uni.navigateBack();
     },
-    submit() {
-      console.log("发布按钮被点击");
-      this.uploadPost();  // 调用上传帖子函数
-    },
-    // 图片上传功能：选择文件并上传到云存储
-    async chooseImage(event) {
-      const file = event.target.files[0];  // 获取选中的文件
-      if (file) {
-        try {
-          const cloudPath = `study_images/${Date.now()}-${file.name}`;  // 创建云端文件路径
 
-          // 上传文件到云存储
-          const uploadRes = await uniCloud.uploadFile({
-            cloudPath,
-            filePath: file // 使用本地文件路径
-          });
+    // 选择图片
+    chooseImage() {
+      const maxCount = 3 - this.images.length;
+      uni.chooseImage({
+        count: maxCount,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['album', 'camera'],
+        success: async (res) => {
+          const tempFilePaths = res.tempFilePaths;
+          for (let i = 0; i < tempFilePaths.length; i++) {
+            const filePath = tempFilePaths[i];
+            try {
+              const cloudPath = `study_report/${Date.now()}-${Math.floor(Math.random() * 1000)}.jpg`;
+              const uploadResult = await uniCloud.uploadFile({
+                filePath: filePath,
+                cloudPath: cloudPath,
+              });
+              console.log('上传成功：', uploadResult);
 
-          if (!uploadRes.fileID) {
-            throw new Error('文件上传失败，未获取到 fileID');
+              const fileID = uploadResult.fileID;
+
+              // 获取临时 URL
+              const tempFileURLResult = await uniCloud.getTempFileURL({
+                fileList: [fileID],
+              });
+              const tempFileURL = tempFileURLResult.fileList[0].tempFileURL;
+
+              // 将图片信息添加到 images 数组
+              this.images.push({
+                url: tempFileURL,  // 用于显示图片
+                fileID: fileID,    // 用于提交到数据库
+              });
+            } catch (error) {
+              console.error('上传失败：', error);
+              uni.showToast({
+                title: '图片上传失败',
+                icon: 'none',
+              });
+            }
           }
-
-          // 获取文件的临时 URL
-          const fileUrlRes = await uniCloud.getTempFileURL({
-            fileList: [uploadRes.fileID]
-          });
-
-          if (fileUrlRes.fileList.length > 0 && fileUrlRes.fileList[0].tempFileURL) {
-            const imageUrl = fileUrlRes.fileList[0].tempFileURL;
-            this.images.push({ url: imageUrl });  // 将云存储图片URL添加到 images 数组
-            console.log('上传图片 URL:', imageUrl);
-          } else {
-            throw new Error('获取文件 URL 失败');
-          }
-
-        } catch (error) {
-          uni.showToast({
-            title: error.message || '上传失败，请重试',
-            icon: 'none'
-          });
-        }
-      }
+        },
+        fail: (error) => {
+          console.error('选择图片失败：', error);
+        },
+      });
     },
 
-    // 移除上传的图片
+    // 移除图片
     removeImage(index) {
-      console.log("移除图片，索引：", index);
-      this.images.splice(index, 1);  // 删除指定索引的图片
-      console.log("当前图片数组：", this.images);
+      this.images.splice(index, 1);
     },
 
-    // 发布帖子
-    uploadPost() {
-      console.log("正在上传帖子...");
-      // 这里只是模拟发布，实际发布内容可以通过 API 请求到服务器
-      console.log({
+    // 提交发布
+    async submit() {
+      if (!this.title.trim()) {
+        uni.showToast({
+          title: '标题不能为空',
+          icon: 'none',
+        });
+        return;
+      }
+      if (!this.content.trim()) {
+        uni.showToast({
+          title: '内容不能为空',
+          icon: 'none',
+        });
+        return;
+      }
+
+      // 获取当前用户的 user_id
+      const userId = uni.getStorageSync('user_id');
+      if (!userId) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none',
+        });
+        return;
+      }
+
+      // 获取今天的日期，格式为 'YYYY-MM-DD'
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = (today.getMonth() + 1).toString().padStart(2, '0');
+      const day = today.getDate().toString().padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+
+      // 组装帖子数据
+      const postData = {
+        user_id: userId,
         title: this.title,
         content: this.content,
-        images: this.images.map(image => image.url)  // 将图片的 URL 传递给服务器
-      });
-      this.resetForm();  // 清空表单
-    },
+        images: this.images.map(image => image.fileID),  // 存储 fileID
+        createTime: Date.now(), // 时间戳
+        date: todayStr, // 添加日期字段
+      };
 
-    // 重置表单
-    resetForm() {
-      this.title = '';
-      this.content = '';
-      this.images = [];
-    }
-  }
-}
+      // 将帖子数据存储到数据库
+      try {
+        const res = await uniCloud.callFunction({
+          name: 'addStudyReport',
+          data: postData,
+        });
+        if (res.result && res.result.code === 0) {
+          uni.showToast({
+            title: '发布成功',
+            icon: 'success',
+          });
+          // 发布成功后，可以清空表单或返回上一页
+          this.title = '';
+          this.content = '';
+          this.images = [];
+          uni.switchTab({
+            url: '/pages/study_soul/study_soul'
+          });
+        } else {
+          uni.showToast({
+            title: res.result.msg || '发布失败',
+            icon: 'none',
+          });
+        }
+      } catch (error) {
+        console.error('发布失败：', error);
+        uni.showToast({
+          title: '发布失败，请重试',
+          icon: 'none',
+        });
+      }
+    },
+  },
+};
 </script>
 
 <style scoped>
-/* 样式部分不变 */
+/* 样式部分 */
 .report-share-container {
   display: flex;
   flex-direction: column;
@@ -142,8 +207,8 @@ export default {
 }
 
 .button-text {
-	color: #BD3124;
-	font-weight: bold;
+  color: #BD3124;
+  font-weight: bold;
 }
 
 .title-input {
@@ -152,23 +217,17 @@ export default {
 
 .title-placeholder {
   font-size: 18px;
+  font-weight: bold;
   padding: 5px;
   width: 100%;
   border: none;
   outline: none;
 }
 
-.title-text {
-  font-size: 18px;
-  font-weight: bold;
-}
-
 .divider {
   width: 100%;
   height: 1px;
   background-color: #ccc;
-  margin: 20px 0;
-  margin-top: 0%;
 }
 
 .content-input {
@@ -181,61 +240,70 @@ export default {
   border: none;
   outline: none;
   min-height: 100px;
+  resize: vertical; /* 允许垂直缩放 */
 }
 
 .image-upload {
   margin-top: 20px;
   display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
+}
+
+.upload-tips {
+  margin-top: 10px;
+}
+
+.max-images {
+  color: #A9A9A9; /* 灰色 */
+  font-size: 12px;
+  margin: 0;
+}
+
+.share-success {
+  color: #BD3124; /* 红色 */
+  font-size: 12px;
+  margin: 5px 0 0 0;
+  font-weight: bold;
 }
 
 .uploaded-image {
   position: relative;
-  display: inline-block;
 }
 
 .uploaded-image img {
   width: 100px;
   height: 100px;
   object-fit: cover;
-  margin-right: 10px;
 }
 
-.uploaded-image button {
+.remove-button {
   position: absolute;
   top: 5px;
   right: 5px;
-  background-color: red;
+  background-color: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 5px;
   border: none;
-  border-radius: 5px;
-}
-
-.uploaded-image button:hover {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 18px;
+  text-align: center;
   cursor: pointer;
 }
 
-.upload-btn input {
-  display: block;
-  opacity: 0;  /* 隐藏input，但仍然可点击 */
-  position: absolute;
-  z-index: 10;
-  width: 100%;
-  height: 100%;
+.upload-btn {
+  width: 100px;
+  height: 100px;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 .upload-icon {
   width: 40px;
   height: 40px;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.upload-icon:hover {
-  transform: scale(1.1);
 }
 </style>

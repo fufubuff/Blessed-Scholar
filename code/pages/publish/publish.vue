@@ -17,14 +17,15 @@
       <textarea class="description-input" placeholder="详细说明问题，以便获得更好的回答" v-model="description"></textarea> <!-- 问题描述 -->
     </view>
 
-    <!-- 图片上传 -->
-    <view class="image-upload">
-      <text class="image-upload-text">添加优质配图将会得到更多人回答（最多三张）</text> <!-- 图片上传说明 -->
-      <view class="image-preview" v-for="(img, index) in images" :key="index">
-        <image :src="img" class="uploaded-image" /> <!-- 展示上传的图片 -->
-      </view>
-      <button class="add-image-button" @click="addImage">+</button> <!-- 上传按钮 -->
-    </view>
+ <!-- 图片上传 -->
+ <view class="image-upload">
+   <text class="image-upload-text">添加优质配图将会得到更多人回答（最多三张）</text> <!-- 图片上传说明 -->
+   <view class="image-preview" v-for="(img, index) in images" :key="index">
+     <image :src="img" class="uploaded-image" /> <!-- 展示上传的图片 -->
+   </view>
+   <button class="add-image-button" @click="addImage">+</button> <!-- 上传按钮 -->
+ </view>
+
 
     <!-- 福币流通部分 -->
     <view class="reward-section">
@@ -84,13 +85,27 @@
       }, 3000);
     },
     addImage() {
-      // 模拟添加图片逻辑，最多三张
-      if (this.images.length < 3) {
-        this.images.push('/static/image-placeholder.png'); // 添加一张图片
-      } else {
-        alert("最多只能上传三张图片"); // 超过三张时提示
-      }
-    },
+        // 限制最多选择三张图片
+        if (this.images.length >= 3) {
+          uni.showToast({
+            title: '最多只能上传三张图片',
+            icon: 'none'
+          });
+          return;
+        }
+    
+        // 选择图片
+        uni.chooseImage({
+          count: 3 - this.images.length, // 限制选择的图片数量
+          success: (res) => {
+            // 将选中的图片路径添加到 images 数组中
+            this.images.push(...res.tempFilePaths);
+          },
+          fail: (err) => {
+            console.error('图片选择失败', err);
+          }
+        });
+      },
     setReward(value) {
       if (value === '自定义') {
         this.reward = 'custom';  // 设置 reward 为 'custom'，表示选择了自定义按钮

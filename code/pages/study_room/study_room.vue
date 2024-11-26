@@ -4,7 +4,7 @@
     <div class="header-image">
       <img :src="imageSrc" alt="Study Room" />
       <div class="overlay">
-        <h1 v-if="ranking === 1">{{ nickname + ' 霸占了自习室封面' }}</h1>
+        <h1>{{ nickname + ' 霸占了自习室封面' }}</h1>
         <div class="stats">
           <p><span>{{ numberOfPeople }}</span> 人正在专注中</p>
           <p><span>{{ ranking }}</span> 您当前的排名 </p>
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Information Box Below Image -->
-    <div class="info-box">
+    <div class="info-box my-info-box">
       <img src="/static/infotag.png" alt="Icon" class="info-icon" />
       <div class="user-info">
         <img :src="userAvatar" alt="User Avatar" />
@@ -47,6 +47,7 @@
   </div>
 </template>
 
+
 <script>
 export default {
   data() {
@@ -61,6 +62,7 @@ export default {
       studyInProgress: false,  // 判断学习是否进行
       leaderboard: [],  // 用来存储当天的排行榜数据
       timer: null,  // 计时器
+	  userId: '', // 当前用户的 userId
     };
   },
   methods: {
@@ -134,63 +136,99 @@ export default {
       }
     },
 
-    async fetchLeaderboard() {
-      const today = new Date().toISOString().split('T')[0]; // 获取今天的日期（yyyy-MM-dd 格式）
+    // 获取背景图片
+      async fetchBackgroundImage(userId) {
+        try {
+          const res = await uniCloud.callFunction({
+            name: 'getUserInfo',
+            data: { user_id: userId }
+          });
+    
+          if (res.result && res.result.code === 0 && res.result.data) {
+            if (res.result.data.backgroundUrl) {
+              this.imageSrc = res.result.data.backgroundUrl;
+            } else {
+              this.imageSrc = '/static/default-background.jpg';  // 使用默认背景图
+            }
+          } else {
+            console.error('获取背景图片失败:', res.result.msg);
+            this.imageSrc = '/static/default-background.jpg';
+          }
+        } catch (error) {
+          console.error('获取背景图片失败:', error);
+          this.imageSrc = '/static/default-background.jpg';
+        }
+      },
+    
+      async fetchLeaderboard() {
+        // 获取今天的日期（UTC+8 时区）
+        const currentDate = new Date();
+        const utcTime = currentDate.getTime() + (currentDate.getTimezoneOffset() * 60000);
+        const offset = 8; // UTC+8 时区
+        const localTime = new Date(utcTime + (3600000 * offset));
+        const today = localTime.toISOString().split('T')[0]; // 获取本地日期，格式为 'YYYY-MM-DD'
       
-      try {
-        const res = await uniCloud.callFunction({
-          name: 'getStudyUsersForToday',
-          data: { today: today }
-        });
-
-        console.log('云函数返回的数据:', res); 
-
-        if (res && res.result && Array.isArray(res.result) && res.result.length > 0) {
-          this.leaderboard = res.result.map(item => ({
-            name: item.nickname,  
-            avatar: item.avatarUrl, 
-            timeSpent: item.totalStudyDuration, 
-          }));
-
-          this.updateLeaderboard();  // 确保数据加载后再更新排行榜
-        } else {
-          console.error('返回数据格式错误或没有数据:', res);
+        try {
+          const res = await uniCloud.callFunction({
+            name: 'getStudyUsersForToday',
+            data: { today: today }
+          });
+      
+          if (res && res.result && Array.isArray(res.result) && res.result.length > 0) {
+            this.leaderboard = res.result.map(item => ({
+              userId: item.userId,
+              name: item.nickname,
+              avatar: item.avatarUrl,
+              timeSpent: item.totalStudyDuration,
+            }));
+      
+            // **对排行榜数据进行排序**
+            this.leaderboard.sort((a, b) => b.timeSpent - a.timeSpent);
+      
+            // **获取排行榜第一名的用户ID**
+            const topUserId = this.leaderboard[0].userId;
+      
+            // **调用方法获取背景图片**
+            await this.fetchBackgroundImage(topUserId);
+      
+            this.updateLeaderboard();  // 确保数据加载后再更新排行榜
+          } else {
+            console.error('返回数据格式错误或没有数据:', res);
+            uni.showToast({
+              title: '未能获取排行榜数据，请稍后再试',
+              icon: 'none'
+            });
+          }
+        } catch (error) {
+          console.error('获取排行榜数据失败:', error); 
           uni.showToast({
-            title: '未能获取排行榜数据，请稍后再试',
+            title: '获取排行榜数据失败，请检查网络或稍后再试',
             icon: 'none'
           });
         }
-      } catch (error) {
-        console.error('获取排行榜数据失败:', error); 
-        uni.showToast({
-          title: '获取排行榜数据失败，请检查网络或稍后再试',
-          icon: 'none'
-        });
-      }
-    },
+      },
+
+
 
     updateLeaderboard() {
-	  const userId = uni.getStorageSync('user_id');
+      const userId = uni.getStorageSync('user_id');
       if (this.leaderboard.length > 0) {
         // 排行榜按照学习时长排序
         this.leaderboard.sort((a, b) => b.timeSpent - a.timeSpent);
     
         // 查找当前用户的排名
-        const userRank = this.leaderboard.findIndex(user => user.userId === this.userId);  // 使用 user_id 来定位当前用户
-
-    
+        const userRank = this.leaderboard.findIndex(user => user.userId === userId);
         // 更新当前排名
-        this.ranking = userRank !== -1 ? userRank + 1 : this.ranking;
+        this.ranking = userRank !== -1 ? userRank + 1 : null;
     
-        // 如果是第一名，更新昵称为第一名的昵称
-        if (this.ranking === 1) {
-          this.nickname = this.leaderboard[0].name;  // 获取排行榜第一名的昵称
-        }
+        // **始终**更新霸榜者的昵称
+        this.nickname = this.leaderboard[0].name;  // 获取排行榜第一名的昵称
     
         // 更新正在专注的人数
         this.numberOfPeople = this.leaderboard.length;
       }
     },
+
 
 
     // 学习结束
@@ -220,7 +258,9 @@ export default {
     }
   },
   mounted() {
-    this.startTimer();  // 页面加载时启动计时器
+    this.userId = uni.getStorageSync('user_id'); // 获取并保存 userId
+	console.log('当前用户的 userId:', this.userId); // 调试日志
+	this.startTimer();  // 页面加载时启动计时器
     this.fetchUserAvatar(); // 获取头像
     this.fetchLeaderboard();  // 获取当天的排行榜数据
   },
@@ -240,14 +280,14 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
 .study-room {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
+  min-height: 100vh; /* 设置最小高度为视口高度 */
+  background-color: #f0f0f0; /* 浅灰色背景 */
 }
 
 .header-image {
@@ -298,49 +338,7 @@ export default {
   font-weight: bold;
 }
 
-.leaderboard {
-  width: 100%;
-  max-height: 270px;
-  overflow-y: auto;
-  margin-top: 20px;
-}
-
-.leaderboard-item {
-  position: relative;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-}
-
-.rank-circle {
-  position: absolute;
-  top: -35px;
-  right: -35px;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 16px;
-  font-weight: bold;
-  transform: rotate(45deg);
-  clip-path: polygon(100% 0%, 100% 100%, 0% 100%);
-}
-
-.rank-circle span {
-  position: absolute;
-  bottom: 1px;
-  left: 28px;
-  transform: rotate(-45deg);
-  margin: 5px;
-}
-
-.rank-circle.top-three {
-  background: #BD3124;
-  color: white;
-}
-
+/* 信息框样式 */
 .info-box {
   display: flex;
   justify-content: space-between;
@@ -350,6 +348,20 @@ export default {
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 为 my-info-box 添加样式 */
+.my-info-box {
+  position: relative; /* 允许内部的绝对定位元素相对于它定位 */
+}
+
+/* 调整 my-info-box 中的 info-icon 位置 */
+.my-info-box .info-icon {
+  position: absolute;
+  top: 0px; /* 根据需要调整 */
+  right: 30px; /* 根据需要调整 */
+  width: 20px;
+  height: 20px;
 }
 
 .user-info {
@@ -366,20 +378,56 @@ export default {
   margin-right: 10px;
 }
 
-.info-icon {
-  position: absolute;
-  top: 40%;
-  right: 10%;
-  width: 20px;
-  height: 20px;
-}
-
 .time-spent {
   font-size: 20px;
   font-weight: bold;
 }
 
-/*悬浮按钮样式*/
+.leaderboard {
+  width: 100%;
+  max-height: 270px;
+  overflow-y: auto;
+  margin-top: 20px;
+}
+
+.leaderboard-item {
+  position: relative;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  overflow: hidden; /* 防止子元素溢出 */
+}
+
+.rank-circle {
+  position: absolute;
+  top: -25px; /* 调整为更小的负值 */
+  right: -25px; /* 调整为更小的负值 */
+  width: 50px; /* 调整大小 */
+  height: 50px; /* 调整大小 */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  transform: rotate(45deg);
+  clip-path: polygon(100% 0%, 100% 100%, 0% 100%);
+}
+
+.rank-circle span {
+  position: absolute;
+  bottom: -3px;
+  left: 18px; /* 根据新的圆形大小调整 */
+  transform: rotate(-45deg);
+  margin: 5px;
+}
+
+.rank-circle.top-three {
+  background: #BD3124;
+  color: white;
+}
+
+/* 悬浮按钮样式 */
 .end-study-btn {
   position: fixed;
   bottom: 20px;

@@ -26,32 +26,48 @@
      
 
     <!-- 帖子内容 -->
-    <scroll-view scroll-y="true" class="post-list" v-if="activeTab === '求解答'">
-      <view v-for="(post, index) in posts" :key="index" class="post">
-        <view class="post-container">
-          <view class="post-header">
-            <image :src="post.authorAvatar" class="author-avatar" @error="handleImageError"/>
-
-            <view class="post-author-info">
-              <text class="post-author">{{ post.author }}</text>
-              <text class="post-date">{{ post.date }}</text>
-            </view>
-          </view>
-          <view class="post-content">
-            <text>{{ post.content }}</text>
-			
-<view class="post-images" v-if="post.images.length">
-  <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" @error="handleImageError" />
-</view>
-
-          </view>
-          <view class="post-actions">
-            <text class="followers-count">{{ post.followersCount }} 人正在关注</text>
-            <button class="answer-button"@click="navigateTo('postxijie')">回答</button>
-          </view>
+<!-- 可滚动的帖子列表容器，只有在 activeTab 为 '求解答' 时显示 -->
+<scroll-view scroll-y="true" class="post-list" v-if="activeTab === '求解答'">
+  <!-- 遍历 posts 数组，渲染每个帖子 -->
+  <view v-for="(post, index) in posts" :key="index" class="post">
+    <!-- 帖子的主体内容容器 -->
+    <view class="post-container">
+      <!-- 帖子的头部，包含作者头像和作者信息 -->
+      <view class="post-header">
+        <!-- 显示作者的头像，若加载失败则调用 handleImageError 方法 -->
+        <image :src="post.authorAvatar" class="author-avatar" @error="handleImageError"/>
+        
+        <!-- 显示作者名称和发帖时间 -->
+        <view class="post-author-info">
+          <text class="post-author">{{ post.author }}</text> <!-- 显示作者名称 -->
+          <text class="post-date">{{ post.date }}</text> <!-- 显示发帖日期 -->
         </view>
       </view>
-    </scroll-view>
+      
+      <!-- 帖子的内容部分 -->
+      <view class="post-content">
+        <!-- 显示帖子的文字内容 -->
+        <text>{{ post.content }}</text>
+        
+        <!-- 如果帖子有图片，则显示图片 -->
+        <view class="post-images" v-if="post.images.length">
+          <!-- 遍历图片数组，显示每张图片 -->
+          <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" @error="handleImageError" />
+        </view>
+      </view>
+      
+      <!-- 帖子的操作区域，显示关注人数和回答按钮 -->
+      <view class="post-actions">
+        <!-- 显示关注人数 -->
+        <text class="followers-count">{{ post.followersCount }} 人正在关注</text>
+        
+        <!-- 点击回答按钮跳转到回答页面 -->
+        <button class="answer-button" @click="navigateTo('postxijie')">回答</button>
+      </view>
+    </view>
+  </view>
+</scroll-view>
+
 
 <!-- 在底部导航栏外面添加一个新图片元素，右下方 -->
 <view class="bottom-right-img" @click="navigateTo('publish')">
@@ -64,62 +80,25 @@
   </view>
 </template>
 <script>
-export default {  data() {
+export default { 
+  data() {
     return {
-      activeTab: '求解答',
-      posts: [ // 帖子数据数组
-        {
-          author: 'Patisseris Land',
-          date: '刚刚发布',
-		  authorAvatar: '/static/1118.png',
-          content: '有没有小伙伴觉得张字老师的高数课，有关概念讲解的有点点难...',
-          images: ['/static/1115.png'], // 帖子包含的图片
-          followersCount: 15, // 关注人数
-          liked: false, // 是否已点赞
-          starred: false // 是否已收藏
-        },
-        {
-          author: '柯小布',
-          date: '4分钟前',
-		  authorAvatar: '/static/1117.png',
-          content: '各位大佬们有没有英语阅读的学习方法，想用提高一下。赐赐',
-          images: [], // 没有图片
-          followersCount: 10,
-          liked: false,
-          starred: false
-        },
-        {
-          author: '骑鱼吃小鱼',
-          date: '6分钟前',
-		  authorAvatar: '/static/1116.png',
-          content: '现在数学分指南二刷结束，是看81绝还是看题源...',
-          images: [], // 没有图片
-          followersCount: 10,
-          liked: false,
-          starred: false
-        }
-      ]
+      activeTab: '求解答', // 当前激活的标签
+      posts: [], // 帖子数据数组，将从云数据库获取
+      activeNav: '' // 当前激活的底部导航项
     };
   },
-
-//  data() {
- //   return {
- //     activeTab: '求解答', // 当前激活的标签
-   //   posts: [], // 帖子数据数组，将从云数据库获取
- //     activeNav: '' // 当前激活的底部导航项
-  //  };
-//  },
-//  mounted() {
- //   // 在页面加载完成时调用云函数获取帖子内容
- //   this.fetchPosts();
-//  },
+  mounted() {
+    // 在页面加载完成时调用云函数获取帖子内容
+   this.fetchPosts();
+  },
   methods: {
     // 设置激活的标签
       setActiveTab(tab) {
         this.activeTab = tab;
         if (tab === '关注') {
           uni.reLaunch({
-          				url:"/pages/jiayouzhan/jiayouzhan"
+          				url:"/pages/attention/attention"
           			})
         }
         if (tab === '加油站') {
@@ -221,6 +200,11 @@ navigateTo(page) {
   justify-content: space-around;
   background-color: #f8f8f8;
   padding: 10px 0;
+  position: relative;
+}
+.tab {
+  color: #666;
+  font-size: 15px;
   position: relative;
 }
 

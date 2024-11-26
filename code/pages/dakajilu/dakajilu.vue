@@ -18,17 +18,26 @@
               <text class="day-title">{{ record.title }}</text>
               <!-- 分割符 -->
               <view class="separator"></view>
-              <text class="description">{{ record.description }}</text>
+              <text class="description">{{ record.content }}</text>
             </view>
             <!-- 图片列表 -->
             <view class="image-list">
-              <image class="record-image" v-for="(img, imgIndex) in record.images" :key="imgIndex" :src="img"></image>
+              <image
+                class="record-image"
+                v-for="(img, imgIndex) in record.images"
+                :key="imgIndex"
+                :src="img"
+              ></image>
             </view>
           </view>
           <!-- 点赞部分 -->
           <view class="footer">
             <view class="like-container">
-              <image class="like-icon-filled" src="/static/点赞.png" @click="likeRecord(index)" />
+              <image
+                class="like-icon-filled"
+                src="/static/点赞.png"
+                @click="likeRecord(index)"
+              />
               <text class="like-count">{{ record.likes }}</text>
             </view>
           </view>
@@ -42,40 +51,102 @@
 export default {
   data() {
     return {
-      records: [
-        {
-          date: '19/10',
-          title: '打卡第三天!\n',
-          description: '今日完成了：1. 数据结构第三章 2. 高数模拟卷1 3. 英语单词100个 4. 肖秀荣思政手册也开始背了...',
-          images: [
-            '/static/鸡汤1.jpg',
-            '/static/鸡汤2.jpg',
-            '/static/sjjg.jpg',
-          ],
-          likes: 9,
-        },
-        {
-          date: '18/10',
-          title: '打卡第二天!\n',
-          description: '今日完成了：1. 数据结构第三章 2. 高数模拟卷1 3. 英语单词100个 4. 肖秀荣思政手册也开始背了...',
-          images: [
-            '/static/鸡汤1.jpg',
-            '/static/鸡汤2.jpg',
-            '/static/sjjg.jpg',
-          ],
-          likes: 9,
-        },
-      ],
+      records: [], // 存储打卡记录数据
     };
   },
+  onLoad() {
+    this.getStudyReports();
+  },
   methods: {
-    goBack() {
-      // 返回到上一个页面
-      uni.navigateBack();
+    // 获取打卡记录
+    async getStudyReports() {
+      const userId = uni.getStorageSync('user_id');
+      if (!userId) {
+        uni.showToast({
+          title: '未找到用户ID',
+          icon: 'none',
+        });
+        return;
+      }
+
+      try {
+        const res = await uniCloud.callFunction({
+          name: 'getStudyReports', // 调用云函数
+          data: { user_id: userId },
+        });
+
+        console.log('云函数响应:', res); // 调试用
+
+        if (res.result.code === 0) {
+          const records = res.result.data; // 获取到的打卡记录
+
+          // 收集所有图片的 fileID，并过滤掉无效的 fileID
+          const allFileIDs = [];
+          records.forEach(record => {
+            if (record.images && Array.isArray(record.images)) {
+              record.images.forEach(img => {
+                if (typeof img === 'string' && img.trim() !== '') {
+                  allFileIDs.push(img);
+                }
+              });
+            }
+          });
+
+          if (allFileIDs.length > 0) {
+            // 转换所有 fileID 为 tempFileURL
+            const fileList = allFileIDs; // 直接使用字符串数组
+
+            // 调用 getTempFileURL 并传递字符串数组
+            const fileURLRes = await uniCloud.getTempFileURL({
+              fileList,
+            });
+
+            console.log('getTempFileURL 响应:', fileURLRes); // 调试用
+
+            if (fileURLRes.fileList && fileURLRes.fileList.length > 0) {
+              // 假设 fileURLRes.fileList 的顺序与 fileList 一致
+              const fileIDtoURL = {};
+              fileURLRes.fileList.forEach((file, index) => {
+                const originalFileID = fileList[index];
+                if (file.tempFileURL) {
+                  fileIDtoURL[originalFileID] = file.tempFileURL;
+                }
+              });
+
+              // 替换 records 中的图片路径
+              records.forEach(record => {
+                if (record.images && Array.isArray(record.images)) {
+                  record.images = record.images.map(img => fileIDtoURL[img] || img);
+                }
+              });
+
+              this.records = records; // 更新打卡记录
+            } else {
+              throw new Error('获取图片临时链接失败');
+            }
+          } else {
+            // 如果没有图片，直接更新记录
+            this.records = records;
+          }
+        } else {
+          uni.showToast({
+            title: res.result.msg || '获取失败',
+            icon: 'none',
+          });
+        }
+      } catch (error) {
+        console.error('获取打卡记录失败:', JSON.stringify(error, null, 2));
+        uni.showToast({
+          title: `获取打卡记录失败，请重试: ${error.message || '未知错误'}`,
+          icon: 'none',
+        });
+      }
     },
+
+    // 点赞逻辑
     likeRecord(index) {
-      // 点赞逻辑
-      this.records[index].likes++;
+      this.records[index].likes++; // 增加点赞数量
+      // 如果需要同步到数据库，请在此处添加相应逻辑
     },
   },
 };
@@ -133,7 +204,6 @@ export default {
   flex-direction: column;
 }
 
-/* 分割符样式 */
 .separator {
   width: 100%;
   height: 1px;
@@ -173,7 +243,7 @@ export default {
 .footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* 使点赞部分靠右对齐 */
+  justify-content: flex-end;
 }
 
 .like-container {

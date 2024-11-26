@@ -3,15 +3,16 @@
 
   <view class="container">
     <!-- 头部 -->
-    <view class="header">
-      <image class="background-image" src="/static/background.png"></image>
-      <image class="overlay-image" src="/static/background1.png"></image>
-	   <image
-	          class="settings-icon"
-	          src="/static/shezhi.jpg"
-	          @click="navigateToSettings"
-	        ></image>
-    </view>
+      <view class="header" @click="navigateTo('beijinggenghuan')">
+        <!-- 动态绑定背景图片 -->
+        <image class="background-image" :src="backgroundImage" mode="aspectFill"></image>
+        <image class="overlay-image" src="/static/background1.png"></image>
+        <image
+          class="settings-icon"
+          src="/static/shezhi.png"
+          @click.stop="navigateToSettings"
+        ></image>
+      </view>
      
     <!-- 个人资料 -->
     <view class="profile">
@@ -50,7 +51,7 @@
           <view class="check-in-summary">
             <image src="/static/target-icon.png" class="summary-icon"></image>
             <text class="check-in-title">你已累计打卡</text>
-            <text class="check-in-days">100 天</text>
+            <text class="check-in-days">{{ punchDays }}</text>
           </view>
           <view class="check-in-divider"></view>
           <!-- 今日语律 -->
@@ -199,6 +200,8 @@
 export default {
   data() {
     return {
+		punchDays: 0, // 存储打卡天数
+		
 		activeButton: '打卡',
 		      randomQuote: '' , // 存储随机语录
 		activeButton: '表格树',
@@ -223,6 +226,7 @@ export default {
 		           ], // 八个技能的数据
 		username: '', // 用户昵称
 		avatarUrl: '', // 用户头像URL
+		backgroundImage: '',
 		signature: '', // 用户个性签名
 		following: 0, // 关注人数
 		followers: 0, // 粉丝人数
@@ -259,13 +263,12 @@ export default {
     };
   },
   
-  
+ 
  computed: {
    filteredCollectionItems() {
      return this.collectionItems.filter(item => item.type === this.activeSubTab);
    },
  },
-
 
   mounted() {
     this.fetchUserInfo();
@@ -302,7 +305,7 @@ export default {
 	        this.activeButton = '规划树';
 	      }
 	    },
-	  
+	 
 	   
 	      updateSkill(index, newName, newX, newY) {
 	        const currentDate = new Date().toLocaleString();  // 获取当前日期时间
@@ -368,52 +371,59 @@ export default {
 	      this.activeSubTab = subTab;
 	    },
     async fetchUserInfo() {
-          try {
-            const userId = uni.getStorageSync('user_id'); // 从本地存储获取 user_id
-            console.log('获取的user_id:', userId);
-			if (!userId) {
-              // 如果没有 user_id，跳转到登录页面
-              uni.navigateTo({
-                url: '/pages/login/login' // 根据你的登录页面路径调整
-              });
-              return;
-            }
+      try {
+        const userId = uni.getStorageSync('user_id'); // 从本地存储获取 user_id
+        console.log('获取的user_id:', userId);
+        if (!userId) {
+          // 如果没有 user_id，跳转到登录页面
+          uni.navigateTo({
+            url: '/pages/login/login' // 根据你的登录页面路径调整
+          });
+          return;
+        }
     
-            // 调用云函数 getUserInfo 获取用户信息
-            const response = await uniCloud.callFunction({
-              name: 'getUserInfo',
-              data: { user_id: userId }
-            });
+        // 调用云函数 getUserInfo 获取用户信息
+        const response = await uniCloud.callFunction({
+          name: 'getUserInfo',
+          data: { user_id: userId }
+        });
     
-            if (response.result) {
-              const userInfo = response.result.data;
-              console.log('用户信息:', userInfo);
-              this.username = userInfo.nickname;
-              this.avatarUrl = userInfo.avatarUrl;
-              this.signature = userInfo.signature;
-              this.following = userInfo.following; // 关注人数
-              this.followers = userInfo.followers; // 粉丝人数
-              
-              // 调用云函数获取福币信息
-              const fubResponse = await uniCloud.callFunction({
-                name: 'getUserFubInfo',
-                data: { user_id: userId }
-              });
+        if (response.result) {
+          const userInfo = response.result.data;
+          console.log('用户信息:', userInfo);
+          
+          this.username = userInfo.nickname;
+          this.avatarUrl = userInfo.avatarUrl;
+          this.signature = userInfo.signature;
+          this.following = userInfo.following; // 关注人数
+          this.followers = userInfo.followers; // 粉丝人数
+		  this.punchDays = userInfo.punch;
     
-              if (fubResponse.result.code === 0) {
-                const fubInfo = fubResponse.result.data;
-                this.fub = fubInfo.fub; // 福币数
-              } else {
-                console.error('获取福币信息失败:', fubResponse.result.msg);
-              }
+          // 获取背景图片URL
+          this.backgroundImage = userInfo.backgroundUrl; // 如果没有背景图URL，使用默认背景
     
-            } else {
-              console.error(response.result ? response.result.msg : '获取用户信息失败');
-            }
-          } catch (error) {
-            console.error('获取用户信息失败', error);
+        
+          // 调用云函数获取福币信息
+          const fubResponse = await uniCloud.callFunction({
+            name: 'getUserFubInfo',
+            data: { user_id: userId }
+          });
+    
+          if (fubResponse.result.code === 0) {
+            const fubInfo = fubResponse.result.data;
+            this.fub = fubInfo.fub; // 福币数
+          } else {
+            console.error('获取福币信息失败:', fubResponse.result.msg);
           }
-        },
+        } else {
+          console.error(response.result ? response.result.msg : '获取用户信息失败');
+        }
+      } catch (error) {
+        console.error('获取用户信息失败', error);
+      }
+    },
+
+
    navigateTo(page) {
        // 定义页面映射
        const pageMap = {
@@ -454,6 +464,8 @@ export default {
 	      this.activeSubTab = '题库'; // 点击“收藏”时，默认选中“题库”子选项卡
 	    }
 	  },
+	  
+	  
   }
 }
 </script>
@@ -536,7 +548,6 @@ export default {
   opacity: 0.8;
 }
 
-
 .container {
   display: flex;
   flex-direction: column;
@@ -584,7 +595,10 @@ body, html {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1; /* 确保这个图像位于 background-image 之上 */
+}
+
+.settings-icon {
+	z-index: 1000;
 }
 
 .background-image {
@@ -712,9 +726,6 @@ body, html {
   margin-left: -20px; /* 负值使元素向左移动，调整数值达到理想位置 */
 }
 
-
-
-
 .skill-tree-section {
   width: 100%;
   display: flex;
@@ -728,7 +739,6 @@ body, html {
   height: auto; /* 保持图片的宽高比 */
   max-width: 400px; /* 限制最大宽度，防止在大屏幕上过大 */
 }
-
 
 .button-container {
   position: absolute; /* Position can be absolute if needed */
@@ -766,7 +776,6 @@ body, html {
   border: none !important;
   background: none !important;
 }
-
 
 .check-in-section {
   display: flex;
@@ -909,7 +918,6 @@ body, html {
   color: #333; /* 黑色字体 */
 }
 
-
 .more-icon {
   width: 20px;
   height: 20px;
@@ -922,7 +930,6 @@ body, html {
 }
 /* 收藏子选项卡样式 */
 
-
 .sub-tab-button {
   font-size: 14px;
   color: grey;
@@ -931,6 +938,7 @@ body, html {
 .sub-tab-button.active {
   color: black;
 }
+
 .more-icon {
   width: 20px;
   height: 20px;
@@ -1036,37 +1044,46 @@ body, html {
   right: 10px;
   z-index: 10;
 }
+
 /* 根据活动状态改变左侧竖线的颜色 */
 .activity-card.ended .left-line {
   background-color: #888;
 }
+
 .style-toggle-button {
   position: absolute;
   bottom: 260px; /* 保持底部偏移 */
   left: 12px;   /* 保持左侧偏移 */
   width: 20%;  /* 按钮宽度设置为更小的值 */
-  padding: 3px 6px; /* 调整内边距，使按钮更紧凑 */
+  padding: 2px 2px; /* 调整内边距，使按钮更紧凑 */
   font-size: 4px; /* 减小字体大小 */
-  background-color: #dedede; /* 仍保持背景颜色 */
-  color: #90777e;  /* 设置字体颜色 */
+  background-color: #051422; /* 仍保持背景颜色 */
+  color:  #e7d49b;  /* 设置字体颜色 */
   border: none !important; /* 取消边框 */
-  border-radius: 3px; /* 使圆角更小 */
+  border-radius: 4px; /* 使圆角更小 */
   box-shadow: none !important; /* 去掉阴影 */
+  font-weight: bold;  /* 设置字体加粗 */
 }
-
+/* 鼠标悬停时更改背景色 */
+.style-toggle-button:hover {
+  background-color: #9c9c9c; /* 背景色变深，增加交互感 */
+}
 .style-toggle-button:active {
   background-color: #005f8f;  /* 按下时的背景颜色 */
 }
+
 
 .skill-table-section {
   margin-top: 220px;
 }
 
 .skill-table {
-  width: 100%;
+  width: 97%;
   border-collapse: collapse;
-  margin-left: auto;  /* 向右对齐 */
-  margin-right: 0;    /* 或者设置为 10px 来稍微留出一点空白 */
+  margin-left: 15px;  
+  margin-right: 0;    
+  border-radius: 10px;  /* 添加圆角 */
+  overflow: hidden;     /* 确保圆角效果不被覆盖 */
 }
 
 .skill-table th, .skill-table td {
@@ -1099,7 +1116,5 @@ body, html {
   margin-bottom: 1px;
   margin-top: 7px;  /* 向下移动箭头 */
 }
-
-
 
 </style>
