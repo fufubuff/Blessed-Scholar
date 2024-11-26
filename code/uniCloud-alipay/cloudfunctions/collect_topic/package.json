@@ -1,0 +1,7 @@
+{
+  "name": "collect_topic",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

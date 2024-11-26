@@ -38,8 +38,9 @@ exports.main = async (event, context) => {
     const posts2 = postsRes2.data.map(item => {
       const data = item.data;
       return {
+        _id: item._id, // 添加这一行
         userid: data.user_id,
-        author: data.user_name,
+        author: data.nickname,
         authorAvatar: data.user_pho,
         date: data.chat_time,
         content: data.user_chat,
