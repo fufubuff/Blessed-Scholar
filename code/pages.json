@@ -1,17 +1,35 @@
 {
   "pages": [
-     {
-	        "path": "pages/publish/publish",  
-	        "style": {
-	          "navigationBarTitleText": ""
-	        }
-	  },
-	  {
-	    "path": "pages/postxijie/postxijie",
-	    "style": {
-	      "navigationBarTitleText": ""
-	    }
-	  },
+	{
+	  "path": "pages/zhuyehuodong/zhuyehuodong",
+	  "style": {
+		"navigationStyle": "custom"  // 去掉默认的导航栏
+	  }
+	},
+    {
+   	        "path": "pages/jiayouzhan/jiayouzhan",  
+   	        "style": {
+   	          "navigationBarTitleText": ""
+   	        }
+   	  },
+   	  {
+   	        "path": "pages/publish/publish",  
+   	        "style": {
+   	          "navigationBarTitleText": ""
+   	        }
+   	  },
+   	  {
+   	    "path": "pages/postxijie/postxijie",
+   	    "style": {
+   	      "navigationBarTitleText": ""
+   	    }
+   	  },
+      {
+        "path": "pages/fabuqiuzhu/fabuqiuzhu",
+        "style": {
+          "navigationBarTitleText": ""
+        }
+      },
     {
       "path": "pages/welcome/welcome",
       "style": {
@@ -46,7 +64,13 @@
 			"navigationBarTitleText" : ""
 		}
 	},
-
+	
+    {
+   	        "path": "pages/post-detail/post-detail",  
+   	        "style": {
+   	          "navigationBarTitleText": "帖子详情"
+   	        }
+   	  },
     {
       "path": "pages/qiujieda/qiujieda",
       "style": {
@@ -62,7 +86,7 @@
 	{
 	    "path": "pages/leaderboard/leaderboard",
 	    "style": {
-	        "navigationBarTitleText": "福币榜"
+	        "navigationStyle": "custom"  // 去掉默认的导航栏
 	    }
 	},
     {
@@ -91,20 +115,6 @@
       }
     },
     {
-      "path": "pages/fensi/fensi",
-      "style": {
-        "navigationBarTitleText": "我的",
-        "navigationBarBackgroundColor": "white"
-      }
-    },
-    {
-      "path": "pages/huguan/huguan",
-      "style": {
-        "navigationBarTitleText": "我的",
-        "navigationBarBackgroundColor": "white"
-      }
-    },
-    {
       "path": "pages/beijinggenghuan/beijinggenghuan",
       "style": {
         "navigationBarTitleText": "",
@@ -126,22 +136,22 @@
       }
     },
     {
-      "path": "pages/zhuyehuodong/zhuyehuodong",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-    {
       "path": "pages/dakajilu/dakajilu",
       "style": {
         "navigationBarTitleText": ""
       }
     },
+	 {
+		          "path": "pages/publish-post/publish-post",  
+		          "style": {
+		            "navigationBarTitleText": ""
+		          }
+		    },
     {
     	"path" : "pages/shezhi/shezhi",
     	"style" : 
     	{
-    		"navigationBarTitleText" : ""
+    		"navigationBarTitleText" : "设置"
     	}
     },
     {
@@ -155,7 +165,7 @@
     	"path" : "pages/xiaoxiyutixing/xiaoxiyutixing",
     	"style" : 
     	{
-    		"navigationBarTitleText" : ""
+    		"navigationBarTitleText" : "编辑资料"
     	}
     },
     {
@@ -165,13 +175,13 @@
     		"navigationBarTitleText" : ""
     	}
     },
-    {
-    	"path" : "pages/xiuzheng/xiuzheng",
-    	"style" : 
-    	{
-    		"navigationBarTitleText" : ""
-    	}
-    },
+	{
+	    	"path" : "pages/xiuzheng/xiuzheng",
+	    	"style" : 
+	    	{
+	    		"navigationBarTitleText" : ""
+	    	}
+	    },
     {
     	"path" : "pages/xiaofupu/xiaofupu",
     	"style" : 
@@ -183,53 +193,171 @@
     	"path" : "pages/aihelper/aihelper",
     	"style" : 
     	{
+    		"navigationStyle": "custom"  // 设置为自定义导航栏，不显示底部导航栏
+    	}
+    },
+    {
+    	"path" : "pages/products/products",
+    	"style" : 
+    	{
     		"navigationBarTitleText" : ""
     	}
-    }
+    },
+	 {
+	    	"path" : "pages/study/index",
+	    	"style" : 
+	    	{
+	    		"navigationStyle" : "custom"
+	    	}
+	    },
+		{
+			"path" : "pages/study/search",
+			"style" : 
+			{
+				"navigationStyle" : "custom"
+			}
+		},
+		{
+			"path" : "pages/study/detail",
+			"style" : 
+			{
+				"navigationBarTitleText" : "详情",
+				"navigationBarBackgroundColor": "#fff"
+			}
+		},
+		{
+			"path" : "pages/study/list",
+			"style" : 
+			{
+				"navigationStyle" : "custom"
+			}
+		},
+		{
+			"path" : "pages/study/topics",
+			"style" : 
+			{
+				"navigationStyle" : "custom"
+			}
+		},
+		{
+			"path" : "pages/study/course",
+			"style" : 
+			{
+				"navigationStyle" : "custom"
+			}
+		},
+		{
+			"path" : "pages/study/upload",
+			"style" : 
+			{
+				"navigationStyle" : "custom"
+			}
+		},
+		{
+			"path" : "pages/customizeAI/customizeAI",
+			"style" : 
+			{
+				"navigationStyle" : "custom"
+			}
+		},
+		{
+				"path" : "pages/study_soul/study_soul",
+				"style" : 
+				{
+					"navigationStyle": "custom"  // 去掉默认的导航栏
+				}
+			},
+			{
+				"path" : "pages/study_room/study_room",
+				"style" : 
+				{
+					"navigationBarTitleText" : "自习室"
+				}
+			},
+			{
+				"path" : "pages/study_report/study_report",
+				"style" : 
+				{
+					"navigationBarTitleText" : "学习报告"
+				}
+			},
+			{
+				"path" : "pages/report_share/report_share",
+				"style" : 
+				{
+					"navigationBarTitleText" : "打卡分享"
+				}
+			},
+			{
+				"path" : "pages/addTasks/addTasks",
+				"style" : 
+				{
+					"navigationBarTitleText" : "添加任务"
+				}
+			},
+			{
+				"path" : "pages/webview/webview",
+				"style" : 
+				{
+					"navigationBarTitleText" : ""
+				}
+			},
+			{
+				          "path": "pages/attention_personalPage/attention_personalPage",  
+				          "style": {
+				            "navigationBarTitleText": ""
+				          }
+			},
+			{
+				"path" : "pages/study_analysis/study_analysis",
+				"style" : 
+				{
+					"navigationBarTitleText" : ""
+				}
+			}
   ],
   
   
     "tabBar": {
-      "color": "#7A7E83",
-      "selectedColor": "#bd402f",
-      "borderStyle": "black",
-      "backgroundColor": "#FFFFFF",
-      "list": [
-        {
-          "pagePath": "pages/home/home",
-          "iconPath": "/static/读书魂.png",
-          "selectedIconPath": "/static/读书魂选中.png",
-		  "text":"读书魂"
-          
-        },
-        {
-          "pagePath": "pages/logs/logs",
-          "iconPath": "/static/小研帮.png",
-          "selectedIconPath": "/static/小研帮选中.png",
-		  "text": "小研帮"
-          
-        },
-        {
-          "pagePath": "pages/add/add",
-          "iconPath": "/static/研小fu.png",
-          "selectedIconPath": "/static/研小fu.png"
-		  
-          
-        },
-        {
-          "pagePath": "pages/attention/attention",
-          "iconPath": "/static/小研圈.png",
-          "selectedIconPath": "/static/小研圈选中.png",
-		  "text":"小研圈"
-          
-        },
-        {
-          "pagePath": "pages/zhuyehuodong/zhuyehuodong",
-          "iconPath": "/static/上岸人.png",
-          "selectedIconPath": "/static/上岸人选中.png",
-          "text":"上岸人"
-        }
-      ]
+			"color": "#7A7E83",
+	        "selectedColor": "#bd402f",
+	        "borderStyle": "black",
+	        "backgroundColor": "#FFFFFF",
+	        "list": [
+	         {
+	         	            "pagePath": "pages/study_soul/study_soul",
+	         	            "iconPath": "/static/读书魂.png",
+	         	            "selectedIconPath": "/static/读书魂选中.png",
+	         	  		    "text":"读书魂"
+	         	            
+	         	    },
+	          {
+	            "pagePath": "pages/study/index",
+	            "iconPath": "/static/小研帮.png",
+	            "selectedIconPath": "/static/小研帮选中.png",
+	  		    "text": "小研帮"
+	            
+	          },
+	          {
+	            "pagePath": "pages/aihelper/aihelper",
+	            "iconPath": "/static/研小fu.png",
+	            "selectedIconPath": "/static/研小fu.png"
+	          },
+	          {
+	            "pagePath": "pages/jiayouzhan/jiayouzhan",
+	            "iconPath": "/static/小研圈.png",
+	            "selectedIconPath": "/static/小研圈选中.png",
+	  		    "text":"小研圈"
+	            
+	          },
+	          {
+	            "pagePath": "pages/zhuyehuodong/zhuyehuodong",
+	            "iconPath": "/static/上岸人.png",
+	            "selectedIconPath": "/static/上岸人选中.png",
+	            "text":"上岸人"
+	          }
+	        ]
+      
     },
 
   
