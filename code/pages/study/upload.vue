@@ -174,7 +174,7 @@
                 } catch (error) {
                     console.error('发布失败:', error);
                 }
-				uni.navigateTo({
+				uni.reLaunch({
 				    url: '/pages/study/index'
 				});
             }

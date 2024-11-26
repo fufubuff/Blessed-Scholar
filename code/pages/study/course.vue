@@ -3,22 +3,30 @@
         <!-- 导航 -->
         <view class="uni-page-head status_bar" style="top: 0;">
             <view class="flex_space" style="flex:1">
-                <svg @click="toBack" width="26" height="26" viewBox="0 0 32 32"><path d="M21.781 7.844l-9.063 8.594 9.063 8.594q0.25 0.25 0.25 0.609t-0.25 0.578q-0.25 0.25-0.578 0.25t-0.578-0.25l-9.625-9.125q-0.156-0.125-0.203-0.297t-0.047-0.359q0-0.156 0.047-0.328t0.203-0.297l9.625-9.125q0.25-0.25 0.578-0.25t0.578 0.25q0.25 0.219 0.25 0.578t-0.25 0.578z" fill="#000000"></path></svg>
+                <svg @click="toBack" width="26" height="26" viewBox="0 0 32 32">
+                    <path d="M21.781 7.844l-9.063 8.594 9.063 8.594q0.25 0.25 0.25 0.609t-0.25 0.578q-0.25 0.25-0.578 0.25t-0.578-0.25l-9.625-9.125q-0.156-0.125-0.203-0.297t-0.047-0.359q0-0.156 0.047-0.328t0.203-0.297l9.625-9.125q0.25-0.25 0.578-0.25t0.578 0.25q0.25 0.219 0.25 0.578t-0.25 0.578z" fill="#000000"></path>
+                </svg>
                 <view class="uni-page-head__title">课程中心</view>
                 <image style="width: 67rpx;height: 57rpx;" src="../../static/search.png" @click="toSearch"></image>
             </view>
         </view>
         <view style="height: 44px;"></view>
         <view class="flex_space tabs">
-            <view @click="switchTab(index)" :class="{'tab_active':index==activeIndex}" v-for="(item,index) in tabs">{{item}}</view>
+            <view @click="switchTab(index)" :class="{'tab_active':index==activeIndex}" v-for="(item,index) in tabs" :key="index">{{item}}</view>
         </view>
         <view class="list">
-            <view class="item" v-for="course in filteredCourses" :key="course._id" @click="openLink(course.link)">
+            <view class="item" v-for="course in filteredCourses" :key="course._id">
                 <image class="item_index" :src="course.cover_url" mode="aspectFill"></image>
                 <view class="item_body">
                     <view class="item_title">{{course.course_name}}</view>
                     <view style="color:#a5a4a4">{{course.date}}</view>
                 </view>
+                <button 
+                        :class="{'favorite-button': true, 'favorited': course.isFavorited}" 
+                        @click="toggleFavorite(course)"
+                    >
+                        {{ course.isFavorited ? '已收藏' : '收藏' }}
+                    </button>
             </view>
         </view>
     </view>
@@ -30,7 +38,9 @@ export default {
         return {
             tabs: ['专业课', '英语', '数学', '思政'],
             activeIndex: 0,
-            courses: []
+            courses: [],
+            currentUserId: null, // 添加 currentUserId
+            starredCourses: [] // 添加 starredCourses
         };
     },
     computed: {
@@ -57,12 +67,64 @@ export default {
                     name: 'getCourse'
                 });
                 if (res.result.code === 0) {
-                    this.courses = res.result.data;
+                    // 初始化 isFavorited 字段
+                    this.courses = res.result.data.map(course => ({
+                        ...course,
+                        isFavorited: this.starredCourses.includes(course._id)
+                    }));
                 } else {
                     console.error('获取课程数据失败:', res.result.msg);
                 }
             } catch (error) {
                 console.error('获取课程数据失败:', error);
+            }
+        },
+        async fetchUserStarredCourses() {
+            try {
+                const res = await uniCloud.callFunction({
+                    name: 'getUserStarredCourses',
+                    data: {
+                        user_id: this.currentUserId
+                    }
+                });
+                if (res.result.code === 0) {
+                    this.starredCourses = res.result.data.starred_courses || [];
+                    this.fetchCourses(); // 获取课程数据
+                } else {
+                    console.error('获取用户收藏课程数据失败:', res.result.msg);
+                }
+            } catch (error) {
+                console.error('获取用户收藏课程数据失败:', error);
+            }
+        },
+        async toggleFavorite(course) {
+            try {
+                const action = course.isFavorited ? 'remove' : 'add';
+                const res = await uniCloud.callFunction({
+                    name: 'collect_course',
+                    data: {
+                        course_id: course._id,
+                        action: action,
+                        user_id: this.currentUserId // 添加 user_id
+                    }
+                });
+                if (res.result.code === 0) {
+                    course.isFavorited = !course.isFavorited;
+                    uni.showToast({
+                        title: res.result.msg,
+                        icon: 'success'
+                    });
+                } else {
+                    uni.showToast({
+                        title: res.result.msg || '操作失败',
+                        icon: 'none'
+                    });
+                }
+            } catch (error) {
+                uni.showToast({
+                    title: '网络错误',
+                    icon: 'none'
+                });
             }
         },
         openLink(link) {
@@ -76,10 +138,27 @@ export default {
                     icon: 'none'
                 });
             }
+        },
+        // 添加获取当前用户的方法
+        getCurrentUser() {
+            const user = uni.getStorageSync('currentUser');
+            console.log('获取到的 currentUser:', user); // 调试信息
+
+            if (user && user.user_id) {
+                this.currentUserId = user.user_id;
+                console.log('已获取用户信息:', user);
+                this.fetchUserStarredCourses(); // 获取用户收藏课程数据
+            } else {
+                // 未登录，跳转到登录页面
+                uni.showToast({ title: '请先登录', icon: 'none' });
+                uni.navigateTo({ url: '/pages/login/login' });
+            }
+
+            console.log('当前用户ID:', this.currentUserId);
         }
     },
     onLoad() {
-        this.fetchCourses();
+        this.getCurrentUser(); // 调用获取用户方法
     }
 };
 </script>
@@ -128,7 +207,24 @@ page {
     height: 120rpx;
     margin-right: 20rpx;
 }
+.item_body {
+    flex: 1;
+}
 .item_title {
     margin-bottom: 20rpx;
+}
+.favorite-button {
+    margin-top: 10rpx;
+    height: 40px;
+    width: 80px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgb(189, 49, 36);
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+}
+.favorited {
+    background-color: rgb(189, 49, 36);
 }
 </style>

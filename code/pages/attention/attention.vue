@@ -1,6 +1,5 @@
 <template>
-  <view class="container">
-    <view style="height: 20px;"></view>
+
     <!-- Header with title and search button -->
     <view class="header">
       <text class="title">小研圈</text>
@@ -54,107 +53,71 @@
       </view>
     </view>
 
-    <!-- Post Content -->
-    <scroll-view
-      scroll-y="true"
-      class="post-list"
-      v-if="activeContent === '加油站'"
-    >
-      <view v-for="(post, index) in posts" :key="index" class="post">
-        <view class="post-container">
-          <view class="post-header">
-            <image :src="post.data.user_pho" class="author-avatar" />
-            <view>
-              <text class="post-author">{{ post.data.user_name }}</text>
-              <text class="post-date">{{ post.data.chat_time }}</text>
-            </view>
-          </view>
-          <view class="post-content">
-            <text>{{ post.data.user_chat }}</text>
-            <view class="post-images">
-              <image
-                v-for="(img, idx) in post.data.user_chat_pho"
-                :src="img"
-                :key="idx"
-                class="post-image"
-              />
-            </view>
-          </view>
-          <view class="post-actions">
-            <view @click="toggleLike(post)">
-              <image
-                :src="post.liked ? '/static/heart-filled.png' : '/static/heart.png'"
-                class="action-icon"
-              />
-            </view>
-            <view @click="toggleStar(post)">
-              <image
-                :src="post.starred ? '/static/star-filled.png' : '/static/star.png'"
-                class="action-icon"
-              />
-            </view>
-            <view>
-              <image src="/static/chat.png" class="action-icon" />
-            </view>
-          </view>
-        </view>
-      </view>
-    </scroll-view>
-
-    <!-- Question Content -->
-    <!-- 问题内容 -->
-<!-- 问题内容 -->
-<scroll-view
-  scroll-y="true"
-  class="question-list"
-  v-if="activeContent === '求解答'"
->
-  <view
-    v-for="(question, index) in questions"
-    :key="index"
-    class="question"
+      <!-- Post Content -->
+  <scroll-view
+    scroll-y="true"
+    class="post-list"
+    v-if="activeContent === '加油站'"
   >
-    <view class="question-container">
-      <view class="question-header">
-        <image :src="question.authorAvatar" class="author-avatar" />
-        <view>
-          <text class="question-author">{{ question.author }}</text>
-          <text class="question-date">{{ question.date }}</text>
+    <view v-for="(post, index) in posts" :key="index" class="post" @click="navigateToPostDetail(post._id)">
+      <view class="post-container">
+        <view class="post-header">
+          <image :src="post.data.user_pho" class="author-avatar" />
+          <view>
+            <text class="post-author">{{ post.data.nickname }}</text>
+            <text class="post-date">{{ post.data.chat_time }}</text>
+          </view>
         </view>
-      </view>
-      <view class="question-content">
-        <text>{{ question.content }}</text>
-        <view class="question-images">
-          <image
-            v-for="(img, idx) in question.images"
-            :src="img"
-            :key="idx"
-            class="question-image"
-          />
+        <view class="post-content">
+          <text>{{ post.data.user_chat }}</text>
+          <view class="post-images">
+            <image
+              v-for="(img, idx) in post.data.user_chat_pho"
+              :src="img"
+              :key="idx"
+              class="post-image"
+            />
+          </view>
         </view>
-      </view>
-    <view class="question-actions">
-        <!-- 实现回答问题的按钮 -->
-		  <view @click="toggleLike(question)">
-		  <image
-		    :src="questions.liked ? '/static/heart-filled.png' : '/static/heart.png'"
-		    class="action-icon"
-		  />
-		</view>
-		<view @click="toggleStar(question)">
-		  <image
-		    :src="questions.starred ? '/static/star-filled.png' : '/static/star.png'"
-		    class="action-icon"
-		  />
-		</view>
-    <view>
-              <image src="/static/chat.png" class="action-icon" />
-            </view>
       </view>
     </view>
-  </view>
-</scroll-view>
-  </view>
+  </scroll-view>
+
+  <!-- Question Content -->
+  <scroll-view
+    scroll-y="true"
+    class="question-list"
+    v-if="activeContent === '求解答'"
+  >
+    <view
+      v-for="(post, index) in posts"
+      :key="index"
+      class="question"
+      @click="navigateToPostDetail(post._id)"
+    >
+      <view class="question-container">
+        <view class="question-header">
+          <image :src="post.data.user_pho" class="author-avatar" />
+          <view>
+            <text class="question-author">{{ post.data.nickname }}</text>
+            <text class="question-date">{{ post.data.chat_time }}</text>
+          </view>
+        </view>
+        <view class="question-content">
+          <text>{{ post.data.user_chat }}</text>
+          <view class="question-images">
+            <image
+              v-for="(img, idx) in post.data.user_chat_pho"
+              :src="img"
+              :key="idx"
+              class="question-image"
+            />
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
 </template>
 
 <script>
@@ -184,6 +147,11 @@ export default {
       // 当前页面，无需跳转
     }
   },
+  navigateToPostDetail(postId) {
+      uni.navigateTo({
+        url: `/pages/post-detail/post-detail?id=${postId}`,
+      });
+    },
     navigateToPersonalPage(userid) {
       console.log('Navigating to personal page with userid:', userid); // 打印 userid
       uni.navigateTo({
@@ -211,42 +179,22 @@ export default {
       }
     },
     async fetchQuestions() {
-    try {
-      console.log('调用 getAttentionQuestion 云函数，参数：', { userid: this.userid });
-      const res = await uniCloud.callFunction({
-        name: 'getAttentionQuestion',
-        data: {
-          userid: this.userid,
-        },
-      });
-      console.log('getAttentionQuestion 返回结果：', res);
-      if (res.result.code === 0) {
-        this.questions = res.result.data;
-        console.log('成功获取 questions 数据：', this.questions);
-      } else {
-        console.error('获取问题失败：', res.result.message);
-        uni.showToast({
-          title: '获取问题失败：' + res.result.message,
-          icon: 'none',
+      try {
+        const res = await uniCloud.callFunction({
+          name: 'getAttentionQuestion',
+          data: {
+            userid: this.userid,
+          },
         });
+        if (res.result.code === 0) {
+          this.posts = res.result.data;
+        } else {
+          console.error('获取帖子失败：', res.result.msg);
+        }
+      } catch (err) {
+        console.error('调用云函数失败：', err);
       }
-    } catch (err) {
-      console.error('调用云函数失败：', err);
-      uni.showToast({
-        title: '调用云函数失败',
-        icon: 'none',
-      });
-    }
   },
-    toggleLike(post) {
-      post.liked = !post.liked;
-    },
-    toggleStar(post) {
-      post.starred = !post.starred;
-    },
-    answerQuestion(question) {
-      // 回答问题的逻辑
-    },
     navigateTo(page) {
       this.activeNav = page;
       if (page === 'attention') {
@@ -489,16 +437,6 @@ export default {
   margin-right: 5px;
   border-radius: 4px;
 }
-.post-actions {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  margin-top: 5px; /* 减小顶部边距 */
-}
-.action-icon {
-  width: 24px;
-  height: 24px;
-}
 .question-list {
   flex: 1;
   overflow-y: auto; /* 允许纵向滚动 */
@@ -549,20 +487,6 @@ export default {
   height: 70px;
   margin-right: 5px;
   border-radius: 4px;
-}
-.question-actions {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  margin-top: 5px; /* 减小顶部边距 */
-}
-.answer-button {
-	height: 40px;
-  background-color: #bd3124;
-  border-radius: 15px;
-  justify-content: center; /* 水平居中 */
-  align-items: center;    /* 垂直居中 */
-
 }
 .answer-text {
   color: white;

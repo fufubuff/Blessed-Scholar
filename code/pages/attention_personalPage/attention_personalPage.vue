@@ -33,23 +33,23 @@
 
     <!-- User Posts Section -->
     <!-- 用户帖子区域 -->
-<scroll-view scroll-y="true" class="posts-section" v-if="posts.length">
-  <view v-for="(post, index) in posts" :key="index" class="post">
-    <view class="post-header">
-      <image :src="post.authorAvatar" class="post-avatar"></image>
-      <view>
-        <text class="post-author">{{ post.author }}</text>
-        <text class="post-date">{{ post.date }}</text>
+    <scroll-view scroll-y="true" class="posts-section" v-if="posts.length">
+      <view v-for="(post, index) in posts" :key="index" class="post" @click="navigateToPostDetail(post._id)">
+        <view class="post-header">
+          <image :src="post.authorAvatar" class="post-avatar"></image>
+          <view>
+            <text class="post-author">{{ post.author }}</text>
+            <text class="post-date">{{ post.date }}</text>
+          </view>
+        </view>
+        <view class="post-content">
+          <text>{{ post.content }}</text>
+          <view class="post-images">
+            <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" />
+          </view>
+        </view>
       </view>
-    </view>
-    <view class="post-content">
-      <text>{{ post.content }}</text>
-      <view class="post-images">
-        <image v-for="(img, idx) in post.images" :src="img" :key="idx" class="post-image" />
-      </view>
-    </view>
-  </view>
-</scroll-view>
+    </scroll-view>
   </view>
 </template>
 
@@ -86,6 +86,11 @@ export default {
           icon: 'none'
         });
       }
+    },
+    navigateToPostDetail(postId) {
+      uni.navigateTo({
+        url: `/pages/post-detail/post-detail?id=${postId}`,
+      });
     }
   },
   onLoad(options) {

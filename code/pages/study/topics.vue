@@ -19,6 +19,12 @@
                     <view class="item_title">{{topic.topic_name}}</view>
                     <view style="color:#a5a4a4">{{topic.date}}</view>
                 </view>
+                <button 
+                        :class="{'favorite-button': true, 'favorited': topic.isFavorited}" 
+                        @click.stop="toggleFavorite(topic)"
+                    >
+                        {{ topic.isFavorited ? '已收藏' : '收藏' }}
+                    </button>
             </view>
         </view>
     </view>
@@ -30,7 +36,9 @@ export default {
         return {
             tabs: ['专业课', '英语', '数学', '思政'],
             activeIndex: 0,
-            topics: []
+            topics: [],
+            currentUserId: null, // 添加 currentUserId
+            starredTopics: [] // 添加 starredTopics
         };
     },
     computed: {
@@ -57,12 +65,64 @@ export default {
                     name: 'getTopic'
                 });
                 if (res.result.code === 0) {
-                    this.topics = res.result.data;
+                    // 初始化 isFavorited 字段
+                    this.topics = res.result.data.map(topic => ({
+                        ...topic,
+                        isFavorited: this.starredTopics.includes(topic._id)
+                    }));
                 } else {
                     console.error('获取题库数据失败:', res.result.msg);
                 }
             } catch (error) {
                 console.error('获取题库数据失败:', error);
+            }
+        },
+        async fetchUserStarredTopics() {
+            try {
+                const res = await uniCloud.callFunction({
+                    name: 'getUserStarredTopics',
+                    data: {
+                        user_id: this.currentUserId
+                    }
+                });
+                if (res.result.code === 0) {
+                    this.starredTopics = res.result.data.starred_topics || [];
+                    this.fetchTopics(); // 获取题库数据
+                } else {
+                    console.error('获取用户收藏题库数据失败:', res.result.msg);
+                }
+            } catch (error) {
+                console.error('获取用户收藏题库数据失败:', error);
+            }
+        },
+        async toggleFavorite(topic) {
+            try {
+                const action = topic.isFavorited ? 'remove' : 'add';
+                const res = await uniCloud.callFunction({
+                    name: 'collect_topic',
+                    data: {
+                        topic_id: topic._id,
+                        action: action,
+                        user_id: this.currentUserId // 添加 user_id
+                    }
+                });
+                if (res.result.code === 0) {
+                    topic.isFavorited = !topic.isFavorited;
+                    uni.showToast({
+                        title: res.result.msg,
+                        icon: 'success'
+                    });
+                } else {
+                    uni.showToast({
+                        title: res.result.msg || '操作失败',
+                        icon: 'none'
+                    });
+                }
+            } catch (error) {
+                uni.showToast({
+                    title: '网络错误',
+                    icon: 'none'
+                });
             }
         },
         openLink(link) {
@@ -85,10 +145,27 @@ export default {
                     icon: 'none'
                 });
             }
+        },
+        // 添加获取当前用户的方法
+        getCurrentUser() {
+            const user = uni.getStorageSync('currentUser');
+            console.log('获取到的 currentUser:', user); // 调试信息
+
+            if (user && user.user_id) {
+                this.currentUserId = user.user_id;
+                console.log('已获取用户信息:', user);
+                this.fetchUserStarredTopics(); // 获取用户收藏题库数据
+            } else {
+                // 未登录，跳转到登录页面
+                uni.showToast({ title: '请先登录', icon: 'none' });
+                uni.navigateTo({ url: '/pages/login/login' });
+            }
+
+            console.log('当前用户ID:', this.currentUserId);
         }
     },
     onLoad() {
-        this.fetchTopics();
+        this.getCurrentUser(); // 调用获取用户方法
     }
 };
 </script>
@@ -137,7 +214,24 @@ page {
     height: 120rpx;
     margin-right: 20rpx;
 }
+.item_body {
+    flex: 1;
+}
 .item_title {
     margin-bottom: 20rpx;
+}
+.favorite-button {
+    margin-top: 10rpx;
+    height: 40px;
+    width: 80px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgb(189, 49, 36);
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+}
+.favorited {
+    background-color: rgb(189, 49, 36);
 }
 </style>
