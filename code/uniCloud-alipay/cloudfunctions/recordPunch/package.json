@@ -1,0 +1,7 @@
+{
+  "name": "recordPunch",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

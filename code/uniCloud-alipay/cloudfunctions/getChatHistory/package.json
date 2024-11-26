@@ -1,0 +1,7 @@
+{
+  "name": "getChatHistory",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

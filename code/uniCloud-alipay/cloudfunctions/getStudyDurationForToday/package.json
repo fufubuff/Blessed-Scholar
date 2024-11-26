@@ -1,0 +1,7 @@
+{
+  "name": "getStudyDurationForToday",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

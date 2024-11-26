@@ -1,0 +1,7 @@
+{
+  "name": "getPost_CARD",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

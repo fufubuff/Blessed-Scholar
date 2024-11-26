@@ -1,45 +1,52 @@
+// 云函数：getStudyDurationForToday
+
 const db = uniCloud.database();
 
 exports.main = async (event, context) => {
-  // 获取参数
-  const { user_id, weekStart, weekEnd } = event;  // weekStart 和 weekEnd 格式应该是 "YYYY-MM-DD"
-  
-  console.log('收到的 user_id 参数:', user_id);
-  console.log('收到的 weekStart 参数:', weekStart);
-  console.log('收到的 weekEnd 参数:', weekEnd);
+  const { user_id } = event; // 从 event 中获取 user_id
 
-  if (!user_id || !weekStart || !weekEnd) {
+  if (!user_id) {
     return {
       code: 1,
-      msg: '缺少必要的参数'
+      msg: '缺少用户ID'
     };
   }
 
-  // 直接使用传入的日期字符串
-  const weekStartFormatted = weekStart;
-  const weekEndFormatted = weekEnd;
+  // 使用 Intl.DateTimeFormat 获取指定时区的当前日期
+  const formatter = new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai', // UTC+8 时区
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
 
-  console.log('使用的 weekStart:', weekStartFormatted);
-  console.log('使用的 weekEnd:', weekEndFormatted);
+  const parts = formatter.formatToParts(new Date());
+  const year = parts.find(part => part.type === 'year').value;
+  const month = parts.find(part => part.type === 'month').value;
+  const day = parts.find(part => part.type === 'day').value;
+
+  const todayStr = `${year}-${month}-${day}`; // 格式化为 'YYYY-MM-DD'
+
+  console.log('收到的 user_id 参数:', user_id);
+  console.log('今天的日期:', todayStr);
 
   try {
-    // 查询数据库中的 study_users 集合，筛选出符合条件的数据
+    // 查询 study_users 集合中符合条件的记录
     const res = await db.collection('study_users')
       .where({
-        userId: user_id,  // 匹配数据库中的 userId 字段
-        startDate: db.command.gte(weekStartFormatted).and(db.command.lte(weekEndFormatted))  // startDate 在 weekStart 和 weekEnd 之间
+        userId: user_id,  // 注意：字段名称应与数据库中的字段一致
+        startDate: todayStr
       })
       .get();
 
-    console.log('查询到的学习记录:', JSON.stringify(res.data));  // 输出查询到的学习记录
+    console.log('查询到的学习记录:', JSON.stringify(res.data));
 
-    // 如果没有查询到符合条件的数据，返回提示信息
     if (!res.data || res.data.length === 0) {
-      console.log('没有符合条件的数据');
+      console.log('今天没有学习记录');
       return {
         code: 0,
-        totalStudyDuration: 0,  // 学习时长为 0
-        msg: '在指定的一周内没有学习记录'
+        totalStudyDuration: 0,
+        msg: '今天没有学习记录'
       };
     }
 
@@ -57,7 +64,7 @@ exports.main = async (event, context) => {
 
       // 如果有 studyRecords，进一步累加每条记录的 studyDuration
       if (record.studyRecords && Array.isArray(record.studyRecords)) {
-        record.studyRecords.forEach(item => {
+        for (let item of record.studyRecords) {
           if (item.studyDuration && typeof item.studyDuration === 'number' && !isNaN(item.studyDuration) && item.studyDuration > 0) {
             totalStudyDuration += item.studyDuration;
             console.log('累加的学习记录时长:', item.studyDuration);
@@ -70,19 +77,19 @@ exports.main = async (event, context) => {
           } else {
             console.log('无效的学习记录:', item);
           }
-        });
+        }
       }
     }
 
-    console.log('总学习时长（秒）:', totalStudyDuration);
+    console.log('今日总学习时长（秒）:', totalStudyDuration);
 
     return {
       code: 0,
       totalStudyDuration: totalStudyDuration,  // 返回总学习时长，单位为秒
-      msg: '成功获取一周的学习时长'
+      msg: '成功获取今日的学习时长'
     };
   } catch (error) {
-    console.error('获取学习数据失败:', error);  // 输出详细错误信息
+    console.error('获取学习数据失败:', error);
     return {
       code: 2,
       msg: '获取学习数据失败',

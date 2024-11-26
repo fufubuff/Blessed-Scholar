@@ -12,7 +12,7 @@ exports.main = async (event, context) => {
   try {
     // 获取用户信息
     const userRes = await db.collection('users')
-      .where({ userid: userid }) // 假设 users 集合的主键是 _id
+      .where({ userid: userid }) // 假设 users 集合的主键是 userid
       .get();
     console.log('用户查询结果:', userRes); // 打印用户查询结果
     if (userRes.data.length === 0) {
@@ -23,10 +23,40 @@ exports.main = async (event, context) => {
     }
     const user = userRes.data[0];
 
-    // 获取用户的帖子
-    const postsRes = await db.collection('posts').where({ userid }).get();
-    console.log('帖子查询结果:', postsRes); // 打印帖子查询结果
-    const posts = postsRes.data;
+    // 获取用户的帖子 from 'posts' 集合
+    const postsRes1 = await db.collection('posts')
+      .where({ "user_id": userid })
+      .get();
+    console.log('posts集合查询结果:', postsRes1); // 打印帖子查询结果
+    const posts1 = postsRes1.data;
+
+    // 获取用户的帖子 from 'POST_CARD' 集合
+    const postsRes2 = await db.collection('POST_CARD')
+      .where({ 'data.user_id': userid })
+      .get();
+    console.log('POST_CARD集合查询结果:', postsRes2); // 打印帖子查询结果
+    const posts2 = postsRes2.data.map(item => {
+      const data = item.data;
+      return {
+        userid: data.user_id,
+        author: data.user_name,
+        authorAvatar: data.user_pho,
+        date: data.chat_time,
+        content: data.user_chat,
+        images: data.user_chat_pho,
+        liked: data.user_liked,
+        collected: data.user_collected,
+        comments: data.user_comment,
+        forward: data.user_forward,
+        // 添加其他需要的字段
+      };
+    });
+
+    // 合并两个帖子数组
+    const posts = posts1.concat(posts2);
+
+    // 根据日期排序（假设帖子有 date 字段）
+    posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return {
       code: 0,

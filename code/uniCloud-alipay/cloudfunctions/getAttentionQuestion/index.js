@@ -2,12 +2,12 @@
 
 exports.main = async (event, context) => {
   const db = uniCloud.database();
-  const userid = '671f7a904b6f6298c45f491f';
+  const { user_id } = event; // 从事件参数获取 user_id
 
   // 获取当前用户的关注列表
   const followersRes = await db.collection('followers')
     .where({
-      followerId: userid,
+      followerId: user_id,
     })
     .get();
 
@@ -24,7 +24,7 @@ exports.main = async (event, context) => {
   // 查询 posts 集合中，user_id 在关注列表中的帖子
   const questionsRes = await db.collection('posts')
     .where({
-      user_id: db.command.in(followeeIds),
+      'user_id': db.command.in(followeeIds),
     })
     .get();
 

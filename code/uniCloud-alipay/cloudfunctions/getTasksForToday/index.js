@@ -20,19 +20,25 @@ exports.main = async (event, context) => {
       })
       .get();
 
-    // 只返回 name 和 remarks
+    // 返回 _id、name、remarks 和 status
     const filteredTasks = tasks.data.map(task => ({
+      _id: task._id,                   // 确保包含 _id
       name: task.name,
-      remarks: task.remarks
+      remarks: task.remarks || '',     // 确保 remarks 存在
+      status: task.status || false     // 确保 status 存在，默认 false
     }));
 
     return {
+      code: 0,
+      msg: '获取任务成功',
       tasks: filteredTasks  // 返回查询到的任务
     };
 
   } catch (error) {
     console.error('获取任务失败:', error);
     return {
+      code: 1,
+      msg: '获取任务失败',
       tasks: []  // 出现错误时返回空任务
     };
   }

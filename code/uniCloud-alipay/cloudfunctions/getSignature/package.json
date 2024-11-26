@@ -1,0 +1,7 @@
+{
+  "name": "getSignature",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

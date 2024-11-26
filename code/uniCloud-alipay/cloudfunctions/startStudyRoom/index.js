@@ -12,37 +12,49 @@ exports.main = async (event, context) => {
 
     const user = userResult.data[0];  // 获取用户数据
 
-    // 获取当前时间戳和今天日期
-    const startTime = Date.now();  // 当前时间戳（毫秒）
-    const startDate = new Date().toISOString().split('T')[0];  // 获取今天的日期（格式：yyyy-MM-dd）
+    // 使用 Intl.DateTimeFormat 获取正确的日期
+    const currentDate = new Date();
+    const timeZone = 'Asia/Shanghai'; // UTC+8
 
-    // 随机生成一个唯一的ID
+    const formatter = new Intl.DateTimeFormat('zh-CN', {
+      timeZone: timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+
+    const parts = formatter.formatToParts(currentDate);
+    const year = parts.find(part => part.type === 'year').value;
+    const month = parts.find(part => part.type === 'month').value;
+    const day = parts.find(part => part.type === 'day').value;
+
+    const startDate = `${year}-${month}-${day}`; // 'YYYY-MM-DD' 格式
+    console.log('今天日期是:', startDate);
+
+    // 生成随机ID
     const generateRandomId = () => {
       return Math.random().toString(36).substr(2, 9);  // 生成一个9位的随机ID
     };
 
     const randomId = generateRandomId();  // 生成随机ID
 
-    // 确保study_users集合存在
+    // 确保 study_users 集合存在
     const studyUsersCollection = db.collection('study_users');
 
-    // 直接插入新记录，使用自定义的随机ID
+    // 插入新记录
     const result = await studyUsersCollection.add({
       _id: randomId,  // 使用随机生成的ID作为记录的ID
       userId: userId,  // 存储用户ID
       nickname: user.nickname,  // 从用户信息中获取昵称
       avatarUrl: user.avatarUrl,  // 从用户信息中获取头像
-      startTime: startTime,  // 使用当前时间戳作为自习开始时间
+      startTime: currentDate,  // 使用当前时间作为自习开始时间
       startDate: startDate,  // 使用今天日期作为自习开始日期
-      createTime: startTime  // 创建时间，使用时间戳
+      createTime: currentDate  // 创建时间，使用当前时间
     });
 
-    // 打印插入后的详细结果
-    console.log('Insert result:', result);  // 打印插入结果
-
-    // 判断是否插入成功，改为检查返回结果的结构
-    if (result && result.id) {  // 检查是否有返回id，确认插入成功
-      console.log('自习记录创建成功，记录ID:', result.id);  // 打印成功插入的记录ID
+    // 判断是否插入成功
+    if (result && result.id) {
+      console.log('自习记录创建成功，记录ID:', result.id);
       return {
         success: true,
         message: '用户自习记录已创建',
@@ -50,18 +62,18 @@ exports.main = async (event, context) => {
           userId,
           nickname: user.nickname,
           avatarUrl: user.avatarUrl,
-          startTime: startTime,  // 返回自习开始时间戳
-          startDate: startDate,  // 返回自习开始日期
-          randomId: randomId    // 返回生成的随机ID
+          startTime: currentDate,
+          startDate: startDate,
+          randomId: randomId
         }
       };
     } else {
-      console.error('插入记录失败，返回结果:', result);  // 打印失败的详细信息
+      console.error('插入记录失败，返回结果:', result);
       return { success: false, message: '创建自习记录失败', error: result };
     }
 
   } catch (error) {
-    console.error('云函数执行失败:', error);  // 输出错误信息
+    console.error('云函数执行失败:', error);
     return {
       success: false,
       message: '云函数执行失败',

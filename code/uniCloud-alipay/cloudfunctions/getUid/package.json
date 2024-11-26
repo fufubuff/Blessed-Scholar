@@ -1,0 +1,7 @@
+{
+  "name": "getUid",
+  "version": "1.0.0",
+  "description": "A cloud function to get the current user's UID",
+  "main": "index.js",
+  "dependencies": {}
+}

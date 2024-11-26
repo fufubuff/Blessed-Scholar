@@ -1,0 +1,7 @@
+{
+  "name": "getPunchStatus",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
